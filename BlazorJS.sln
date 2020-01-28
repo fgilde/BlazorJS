@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorJSSample", "BlazorJSSample\BlazorJSSample.csproj", "{EA569B98-D059-4BA4-A231-1FD15E96B162}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorJS", "BlazorJS\BlazorJS.csproj", "{4D7967A1-11B2-4FAF-A7DA-9F208CFB37E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{098B9169-1386-4EDC-A69E-17221E8CB7FA}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA569B98-D059-4BA4-A231-1FD15E96B162}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA569B98-D059-4BA4-A231-1FD15E96B162}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA569B98-D059-4BA4-A231-1FD15E96B162}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA569B98-D059-4BA4-A231-1FD15E96B162}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D7967A1-11B2-4FAF-A7DA-9F208CFB37E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D7967A1-11B2-4FAF-A7DA-9F208CFB37E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D7967A1-11B2-4FAF-A7DA-9F208CFB37E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D7967A1-11B2-4FAF-A7DA-9F208CFB37E2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F9E9E54-4725-45D4-B37A-00F6273AA1E7}
+	EndGlobalSection
+EndGlobal
