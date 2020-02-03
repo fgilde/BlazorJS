@@ -25,18 +25,6 @@ namespace BlazorJS
             return runtime;
         }
 
-        //public static ValueTask<T> InvokeAsync<T>(this IJSRuntime runtime, Expression<Func<dynamic, T>> action)
-        //{
-        //    string expBody = ((LambdaExpression)action).Body.ToString();
-        //    return runtime.InvokeAsync<T>("x", "");
-        //}
-
-        //public static ValueTask InvokeVoidAsync<T>(this IJSRuntime runtime, Expression<Action<dynamic>> action)
-        //{
-        //    string expBody = ((LambdaExpression)action).Body.ToString();
-
-        //    return runtime.InvokeVoidAsync("x", "");
-        //}
 
         public static Task<string[]> GetLoadedScriptsAsync(this IJSRuntime runtime)
         {

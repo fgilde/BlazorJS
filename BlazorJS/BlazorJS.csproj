@@ -10,8 +10,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
-    <VersionPrefix>0.1</VersionPrefix>
-    <VersionSuffix>preview.$([System.DateTime]::Now.ToString(`yyMMddHHmmss`))</VersionSuffix>
+    <VersionPrefix>1.0</VersionPrefix>
+    <!--<VersionSuffix>preview.$([System.DateTime]::Now.ToString(`yyMMddHHmmss`))</VersionSuffix>-->
     <LangVersion>8</LangVersion>
     <Authors>Florian Gilde</Authors>
     <Description>BlazorJS is a small package to use a Scripts Component on every page or component to load JavaScript files when not loaded, and unload automatically.</Description>

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -18,11 +16,11 @@ namespace BlazorJS
         [Parameter]
         public string Src { get; set; }
 
-        [Parameter]
-        public bool Minify { get; set; } = false;
+        //[Parameter]
+        //public bool Minify { get; set; } = false;
 
-        [Parameter]
-        public bool Bundle { get; set; } = false;
+        //[Parameter]
+        //public bool Bundle { get; set; } = false;
 
         [Parameter]
         public EventCallback<string> SourceLoaded { get; set; }
