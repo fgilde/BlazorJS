@@ -1,9 +1,13 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using ExpressionTreeToString;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.JSInterop;
+using Nextended.Core.Extensions;
 
 namespace BlazorJS
 {
@@ -25,7 +29,42 @@ namespace BlazorJS
             return runtime;
         }
 
+        //public static ValueTask InvokeVoidAsync(this IJSRuntime runtime, Func<dynamic, dynamic> func, TimeSpan timeout, params object[] args)
+        //{
+        //    var fn = func.ToExpression().ToString("C#");
+        //    return runtime.InvokeVoidAsync(fn, timeout, args);
+        //}
 
+        //public static ValueTask InvokeVoidAsync(this IJSRuntime runtime, Func<dynamic, dynamic> func, CancellationToken token, params object[] args)
+        //{
+        //    var fn = func.ToExpression().ToString("C#");
+        //    return runtime.InvokeVoidAsync(fn, token, args);
+        //}
+
+        //public static ValueTask InvokeVoidAsync(this IJSRuntime runtime, Func<dynamic, dynamic> func, params object[] args)
+        //{
+        //    var fn = func.ToExpression().ToString("C#");
+        //    return runtime.InvokeVoidAsync(fn, args);
+        //}
+
+        //public static ValueTask<T> InvokeAsync<T>(this IJSRuntime runtime, Func<dynamic, dynamic> func, TimeSpan timeout, params object[] args)
+        //{
+        //    var fn = func.ToExpression().ToString("C#");
+        //    return runtime.InvokeAsync<T>(fn, timeout, args);
+        //}
+
+        //public static ValueTask<T> InvokeAsync<T>(this IJSRuntime runtime, Func<dynamic, dynamic> func, CancellationToken token, params object[] args)
+        //{
+        //    var fn = func.ToExpression().ToString("C#");
+        //    return runtime.InvokeAsync<T>(fn, token, args);
+        //}
+
+        //public static ValueTask<T> InvokeAsync<T>(this IJSRuntime runtime, Func<dynamic, dynamic> func, params object[] args)
+        //{
+        //    var fn = func.ToExpression().ToString("C#");
+        //    return runtime.InvokeAsync<T>(fn, args);
+        //}
+        
         public static Task<string[]> GetLoadedScriptsAsync(this IJSRuntime runtime)
         {
             return runtime.InvokeAsync<string[]>("eval", "Array.from(document.querySelectorAll('script')).map(scriptTag => scriptTag.src)").AsTask();
