@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Dynamic;
 using System.IO;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using ExpressionTreeToString;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.JSInterop;
 using Nextended.Core.Extensions;
+using ZSpitz.Util;
 
 namespace BlazorJS
 {
@@ -16,22 +20,25 @@ namespace BlazorJS
         private static bool initialized = false;
         private static async Task<IJSRuntime> EnsureCanWork(this IJSRuntime runtime)
         {
-            if (!initialized)
-            {
-                var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
-                var fileInfo = embeddedProvider.GetFileInfo("wwwroot/blazorJS.js");
-                using var stream = fileInfo.CreateReadStream();
-                using var reader = new StreamReader(stream, Encoding.Unicode);
-                var javaScript = reader.ReadToEnd();
-                await runtime.InvokeVoidAsync("eval", javaScript);
-                initialized = true;
-            }
+            await runtime.InvokeVoidAsync("eval", await GetEmbeddedFileContentAsync("wwwroot/blazorJS.js"));
+            initialized = true;
+            
             return runtime;
         }
 
-        //public static ValueTask InvokeVoidAsync(this IJSRuntime runtime, Func<dynamic, dynamic> func, TimeSpan timeout, params object[] args)
+        private static async Task<string> GetEmbeddedFileContentAsync(string file)
+        {
+            var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
+            var fileInfo = embeddedProvider.GetFileInfo(file);
+            await using var stream = fileInfo.CreateReadStream();
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            return await reader.ReadToEndAsync();
+        }
+
+
+        //public static ValueTask InvokeDVoidAsync(this IJSRuntime runtime, Expression<Func<dynamic,object>> func, TimeSpan timeout, params object[] args)
         //{
-        //    var fn = func.ToExpression().ToString("C#");
+        //    var fn = func.ToString();
         //    return runtime.InvokeVoidAsync(fn, timeout, args);
         //}
 
@@ -64,13 +71,25 @@ namespace BlazorJS
         //    var fn = func.ToExpression().ToString("C#");
         //    return runtime.InvokeAsync<T>(fn, args);
         //}
-        
+
+        public static async Task<IJSRuntime> LoadCss(this IJSRuntime runtime, string cssFile)
+        {
+            var css = await GetEmbeddedFileContentAsync(cssFile);
+            return await runtime.AddCss(css);
+        }
+
+        public static async Task<IJSRuntime> AddCss(this IJSRuntime runtime, string cssContent)
+        {
+            await runtime.InvokeVoidAsync("BlazorJS.addCss", cssContent);
+            return runtime;
+        }
+
         public static Task<string[]> GetLoadedScriptsAsync(this IJSRuntime runtime)
         {
             return runtime.InvokeAsync<string[]>("eval", "Array.from(document.querySelectorAll('script')).map(scriptTag => scriptTag.src)").AsTask();
         }
 
-        internal static async Task<IJSRuntime> LoadJsAsync<T>(this IJSRuntime runtime, DotNetObjectReference<T> reference, params string[] fileNames) where T : class
+        public static async Task<IJSRuntime> LoadJsAsync<T>(this IJSRuntime runtime, DotNetObjectReference<T> reference, params string[] fileNames) where T : class
         {
             await (await runtime.EnsureCanWork()).InvokeVoidAsync("BlazorJS.loadScripts", fileNames, reference);
             return runtime;
