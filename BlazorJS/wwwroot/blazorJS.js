@@ -13,6 +13,10 @@
         });
     },
 
+    execute: function (script, params) {
+        return eval(script)(window, ...params);
+    },
+
     unloadScripts: function (fileNames) {
         var loadedScripts = Array.from(document.querySelectorAll('script'));
         fileNames = typeof fileNames === 'string' ? [fileNames] : fileNames;

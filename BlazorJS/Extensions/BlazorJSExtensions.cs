@@ -1,21 +1,14 @@
-﻿using System;
-using System.Dynamic;
-using System.IO;
-using System.Linq.Expressions;
+﻿using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using ExpressionTreeToString;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.JSInterop;
-using Nextended.Core.Extensions;
-using ZSpitz.Util;
 
 namespace BlazorJS
 {
-    public static class BlazorJSExtensions
+    public static partial class BlazorJSExtensions
     {
         private static bool initialized = false;
         private static async Task<IJSRuntime> EnsureCanWork(this IJSRuntime runtime)
@@ -35,43 +28,16 @@ namespace BlazorJS
             return await reader.ReadToEndAsync();
         }
 
+        public static ValueTask AlertAsync(this IJSRuntime runtime, string message)
+        {
+            return runtime.InvokeVoidAsync("alert", message);
+        }
 
-        //public static ValueTask InvokeDVoidAsync(this IJSRuntime runtime, Expression<Func<dynamic,object>> func, TimeSpan timeout, params object[] args)
-        //{
-        //    var fn = func.ToString();
-        //    return runtime.InvokeVoidAsync(fn, timeout, args);
-        //}
-
-        //public static ValueTask InvokeVoidAsync(this IJSRuntime runtime, Func<dynamic, dynamic> func, CancellationToken token, params object[] args)
-        //{
-        //    var fn = func.ToExpression().ToString("C#");
-        //    return runtime.InvokeVoidAsync(fn, token, args);
-        //}
-
-        //public static ValueTask InvokeVoidAsync(this IJSRuntime runtime, Func<dynamic, dynamic> func, params object[] args)
-        //{
-        //    var fn = func.ToExpression().ToString("C#");
-        //    return runtime.InvokeVoidAsync(fn, args);
-        //}
-
-        //public static ValueTask<T> InvokeAsync<T>(this IJSRuntime runtime, Func<dynamic, dynamic> func, TimeSpan timeout, params object[] args)
-        //{
-        //    var fn = func.ToExpression().ToString("C#");
-        //    return runtime.InvokeAsync<T>(fn, timeout, args);
-        //}
-
-        //public static ValueTask<T> InvokeAsync<T>(this IJSRuntime runtime, Func<dynamic, dynamic> func, CancellationToken token, params object[] args)
-        //{
-        //    var fn = func.ToExpression().ToString("C#");
-        //    return runtime.InvokeAsync<T>(fn, token, args);
-        //}
-
-        //public static ValueTask<T> InvokeAsync<T>(this IJSRuntime runtime, Func<dynamic, dynamic> func, params object[] args)
-        //{
-        //    var fn = func.ToExpression().ToString("C#");
-        //    return runtime.InvokeAsync<T>(fn, args);
-        //}
-
+        public static async Task<string> PromptAsync(this IJSRuntime runtime, string message = "", string value = "")
+        {
+            return await runtime.InvokeAsync<string>("prompt", message, value);
+        }
+        
         public static async Task<IJSRuntime> LoadCss(this IJSRuntime runtime, string cssFile)
         {
             var css = await GetEmbeddedFileContentAsync(cssFile);
@@ -104,6 +70,22 @@ namespace BlazorJS
         {
             await (await runtime.EnsureCanWork()).InvokeVoidAsync("BlazorJS.unloadScripts", fileNames);
             return runtime;
+        }
+
+        public static async Task<IJSObjectReference> ImportModuleAsync(this IJSRuntime js, string file)
+        {
+            return await js.InvokeAsync<IJSObjectReference>("import", file);
+        }
+
+        public static async Task<(IJSObjectReference moduleReference, IJSObjectReference jsObjectReference)> ImportModuleAndCreateJsAsync(this IJSRuntime js, string file, string jsCreateMethod, params object?[]? args)
+        {
+            IJSObjectReference jsReference = null;
+            var module = await js.ImportModuleAsync(file);
+            if (module != null)
+            {
+                jsReference = await module.InvokeAsync<IJSObjectReference>(jsCreateMethod, args);
+            }
+            return (module, jsReference);
         }
     }
 }

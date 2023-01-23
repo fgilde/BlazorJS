@@ -1,4 +1,6 @@
 ﻿@page "/counter"
+@using System.Linq.Expressions
+@inject IJSRuntime jsRuntime
 
 <h1>Counter</h1>
 
@@ -8,9 +10,32 @@
 
 @code {
     private int currentCount = 0;
-
-    private void IncrementCount()
+    private string name = "flo";
+    
+    private async Task IncrementCount()
     {
+        var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         currentCount++;
+        //var res = await jsRuntime.DInvokeAsync<string>(window => window.prompt());
+        //Console.WriteLine(res);
+        
+        //await jsRuntime.DInvokeVoidAsync(window => window.alert("test"));
+        //await jsRuntime.DInvokeVoidAsync((window, c) => window.alert(c), currentCount);
+        //await jsRuntime.DInvokeVoidAsync((window, c, x) =>
+        //{
+        //    window.alert(c);
+        //    window.console.log(x);
+        //}, currentCount, "Flo");
+        await jsRuntime.DInvokeVoidAsync(window => window.alert(currentCount + " - " + date + name), JSArgument.For(currentCount).And(date).And(name));
+        await jsRuntime.DInvokeVoidAsync(document => document.location.hash = "3223");
+
+
+        
+        //var hash = await jsRuntime.DInvokeAsync<string>(window =>
+        //{
+        //    window.alert(currentCount);
+        //    return window.location.hash + "_" + currentCount;
+        //}, new[] { JSArgument.For(currentCount) });
+        //await jsRuntime.DInvokeVoidAsync(document => document.location.hash = hash, new[] { JSArgument.For(hash) });
     }
 }

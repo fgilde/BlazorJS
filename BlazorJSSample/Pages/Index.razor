@@ -10,8 +10,8 @@ Welcome to your new app.
 
 @code {
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool f)
     {
-        
+        await base.OnAfterRenderAsync(f);
     }
 }
