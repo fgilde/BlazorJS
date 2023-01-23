@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace BlazorJS;
 
+
 public class JSArgument
 {
     private JSArgument()
@@ -19,10 +20,14 @@ public class JSArgument
     public JSArgument[] And(Expression<Func<object>> expression)
         => new[] { this, For(expression) };
 
+#if NET6_0_OR_GREATER
+
     public JSArgument[] And(object value, [CallerArgumentExpression("value")] string name = null)
         => new[] { this, For(value, name) };
 
     public static JSArgument For(object value, [CallerArgumentExpression("value")] string name = null) => new JSArgument { Name = name, Value = value };
+
+#endif    
 
     public static JSArgument For(Expression<Func<object>> expression)
     {
@@ -49,7 +54,10 @@ public static class JSArgumentExtensions
     public static JSArgument[] And(this JSArgument[] array, Expression<Func<object>> expression)
         => array.Concat(JSArgument.For(expression).ToArray()).ToArray();
 
+#if NET6_0_OR_GREATER
     public static JSArgument[] And(this JSArgument[] array, object value, [CallerArgumentExpression("value")] string name = null)
         => array.Concat(JSArgument.For(value, name).ToArray()).ToArray();
-}
+#endif
     
+}
+

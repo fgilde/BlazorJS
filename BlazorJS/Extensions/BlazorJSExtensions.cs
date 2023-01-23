@@ -72,6 +72,8 @@ namespace BlazorJS
             return runtime;
         }
 
+#if NET6_0_OR_GREATER
+
         public static async Task<IJSObjectReference> ImportModuleAsync(this IJSRuntime js, string file)
         {
             return await js.InvokeAsync<IJSObjectReference>("import", file);
@@ -87,5 +89,8 @@ namespace BlazorJS
             }
             return (module, jsReference);
         }
+
+#endif
+        
     }
 }

@@ -8,6 +8,8 @@ using Microsoft.JSInterop;
 
 namespace BlazorJS
 {
+
+#if NET6_0_OR_GREATER
     public static partial class BlazorJSExtensions
     {
 
@@ -151,6 +153,6 @@ namespace BlazorJS
         #endregion
 
     }
-
+#endif
 
 }
