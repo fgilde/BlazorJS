@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
@@ -10,14 +9,6 @@ namespace BlazorJS
 {
     public static partial class BlazorJSExtensions
     {
-        private static bool initialized = false;
-        private static async Task<IJSRuntime> EnsureCanWork(this IJSRuntime runtime)
-        {
-            await runtime.InvokeVoidAsync("eval", await GetEmbeddedFileContentAsync("wwwroot/blazorJS.js"));
-            initialized = true;
-            
-            return runtime;
-        }
 
         private static async Task<string> GetEmbeddedFileContentAsync(string file)
         {
@@ -57,7 +48,7 @@ namespace BlazorJS
 
         public static async Task<IJSRuntime> LoadJsAsync<T>(this IJSRuntime runtime, DotNetObjectReference<T> reference, params string[] fileNames) where T : class
         {
-            await (await runtime.EnsureCanWork()).InvokeVoidAsync("BlazorJS.loadScripts", fileNames, reference);
+            await runtime.InvokeVoidAsync("BlazorJS.loadScripts", fileNames, reference);
             return runtime;
         }
 
@@ -68,7 +59,7 @@ namespace BlazorJS
 
         public static async Task<IJSRuntime> UnloadJsAsync(this IJSRuntime runtime, params string[] fileNames)
         {
-            await (await runtime.EnsureCanWork()).InvokeVoidAsync("BlazorJS.unloadScripts", fileNames);
+            await runtime.InvokeVoidAsync("BlazorJS.unloadScripts", fileNames);
             return runtime;
         }
 
