@@ -7,7 +7,9 @@
             script.src = filename;
             script.async = true;
             script.addEventListener('load', function () {
-                dotNet.invokeMethodAsync('Loaded', filename);
+                if (dotNet) {
+                    dotNet.invokeMethodAsync('Loaded', filename);
+                }
             });
             document.getElementsByTagName('head')[0].appendChild(script);
         });
