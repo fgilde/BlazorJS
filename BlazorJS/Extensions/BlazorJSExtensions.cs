@@ -28,7 +28,7 @@ namespace BlazorJS
         {
             return await runtime.InvokeAsync<string>("prompt", message, value);
         }
-        
+
         public static async Task<IJSRuntime> LoadCss(this IJSRuntime runtime, string cssFile)
         {
             var css = await GetEmbeddedFileContentAsync(cssFile);
@@ -63,8 +63,15 @@ namespace BlazorJS
             return runtime;
         }
 
+
 #if NET6_0_OR_GREATER
 
+
+        public static Task<IJSObjectReference> ImportModuleBlazorJS(this IJSRuntime runtime)
+        {
+            return runtime.InvokeAsync<IJSObjectReference>("import", "./_content/BlazorJS/BlazorJS.lib.module.js").AsTask();
+        }
+        
         public static async Task<IJSObjectReference> ImportModuleAsync(this IJSRuntime js, string file)
         {
             return await js.InvokeAsync<IJSObjectReference>("import", file);
@@ -80,8 +87,19 @@ namespace BlazorJS
             }
             return (module, jsReference);
         }
+#else
+
+       public static Task ImportModuleBlazorJS(this IJSRuntime runtime)
+       {
+            return runtime.InvokeVoidAsync("import", "./_content/BlazorJS/BlazorJS.lib.module.js").AsTask();
+       }
+
+        public static async Task ImportModuleAsync(this IJSRuntime js, string file)
+        {
+            await js.InvokeVoidAsync("import", file).AsTask();
+        }
 
 #endif
-        
+
     }
 }
