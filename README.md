@@ -103,3 +103,28 @@ It is important to note that the function passed to DInvokeVoidAsync must be a l
 
 Conclusion
 This extension provides a simple and easy way to invoke JavaScript functions from C# with support for dynamic arguments. 
+
+### Simple event interop helper 
+A simple possibility to hook events that should be extended more but currently supports an easy OnBlur extension for any element.
+
+```c#
+private BlazorJSEventInterop<PointerEventArgs> _jsEvent;
+
+_jsEvent = new BlazorJSEventInterop<PointerEventArgs>(_jsRuntime);
+await _jsEvent.OnBlur(OnFocusLeft, ".element-selector");
+
+private Task OnFocusLeft(PointerEventArgs arg)
+{
+    return Task.CompletedTask;
+}
+```
+
+You can also use it manually with any event you want to.
+
+```c#
+private BlazorJSEventInterop<PointerEventArgs> _jsEvent;
+
+_jsEvent = new BlazorJSEventInterop<PointerEventArgs>(_jsRuntime);
+await _jsEvent.AddEventListener("NameOfEvent", async args => { await YourCallBack(); }, ".element-selector");
+
+```

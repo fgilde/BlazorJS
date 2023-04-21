@@ -1,4 +1,6 @@
-﻿window.BlazorJS = {
+﻿import { EventHelper } from './BlazorJS.lib.eventHelper.js';
+
+window.BlazorJS = {
     loadScripts: function (fileNames, dotNet) {
         var loadedScripts = Array.from(document.querySelectorAll('script'));
         fileNames = typeof fileNames === 'string' ? [fileNames] : fileNames;
@@ -42,4 +44,6 @@
             style.appendChild(document.createTextNode(css));
         }
     },
+
+    EventHelper: new EventHelper()
 };
