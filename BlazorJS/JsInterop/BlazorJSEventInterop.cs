@@ -4,11 +4,11 @@ using Microsoft.JSInterop;
 
 namespace BlazorJS.JsInterop;
 
-public class BlazorJSEventInterop<TEventArgs> : IDisposable
+public class BlazorJSEventInterop<TEventArgs> : IDisposable, IAsyncDisposable
 //where TEventArgs : EventArgs 
 {
     private readonly IJSRuntime _jsRuntime;
-    private DotNetObjectReference<BlazorJSEventHelper<TEventArgs>> _reference;
+    public DotNetObjectReference<BlazorJSEventHelper<TEventArgs>> DotNetObjectReference;
 
     public BlazorJSEventInterop(IJSRuntime jsRuntime)
     {
@@ -23,7 +23,7 @@ public class BlazorJSEventInterop<TEventArgs> : IDisposable
     public async Task<BlazorJSEventInterop<TEventArgs>> OnBlur(string[] elementSelectors, string eventName, Func<TEventArgs, Task> callback)
     {
         await _jsRuntime.InvokeVoidAsync("BlazorJS.EventHelper.addCustomEventListenerWhenNotIn", elementSelectors, eventName,
-            _reference = DotNetObjectReference.Create(new BlazorJSEventHelper<TEventArgs>(callback))
+            DotNetObjectReference = Microsoft.JSInterop.DotNetObjectReference.Create(new BlazorJSEventHelper<TEventArgs>(callback))
         );
         return this;
     }
@@ -32,14 +32,20 @@ public class BlazorJSEventInterop<TEventArgs> : IDisposable
     {
         await _jsRuntime.InvokeVoidAsync("BlazorJS.EventHelper.addCustomEventListener",
             eventName,
-            _reference = DotNetObjectReference.Create(new BlazorJSEventHelper<TEventArgs>(callback)), elementSelector  
+            DotNetObjectReference = Microsoft.JSInterop.DotNetObjectReference.Create(new BlazorJSEventHelper<TEventArgs>(callback)), elementSelector  
         ); 
         return this;
     }
 
     public void Dispose()
     {
-        _reference?.Dispose();
+        DotNetObjectReference?.Dispose();
+        DotNetObjectReference = null;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Dispose();
     }
 }
 

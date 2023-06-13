@@ -77,6 +77,14 @@ namespace BlazorJS
             return await js.InvokeAsync<IJSObjectReference>("import", file);
         }
 
+        /// <summary>
+        /// Import a module and create a JS object reference from it using the specified method for initialization.
+        /// </summary>
+        /// <param name="js"></param>
+        /// <param name="file"></param>
+        /// <param name="jsCreateMethod"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public static async Task<(IJSObjectReference moduleReference, IJSObjectReference jsObjectReference)> ImportModuleAndCreateJsAsync(this IJSRuntime js, string file, string jsCreateMethod, params object?[]? args)
         {
             IJSObjectReference jsReference = null;
