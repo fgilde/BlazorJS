@@ -1,32 +1,55 @@
 ﻿import { EventHelper } from './BlazorJS.lib.eventHelper.js';
 
 window.BlazorJS = {
-    loadScripts: function (fileNames, dotNet) {
-        var loadedScripts = Array.from(document.querySelectorAll('script'));
-        fileNames = typeof fileNames === 'string' ? [fileNames] : fileNames;
-        fileNames.filter(filename => loadedScripts.some(elm => !elm.src.endsWith(filename))).forEach(filename => {
-            var script = document.createElement('script');
-            script.src = filename;
-            script.async = true;
-            script.addEventListener('load', function () {
-                if (dotNet) {
-                    dotNet.invokeMethodAsync('Loaded', filename);
+
+    isLoaded: function (filename) {
+        var loadedElements = Array.from(document.querySelectorAll('script,link'));
+        return loadedElements.some(elm => filename.endsWith(elm.src) || filename.endsWith(elm.href));
+    },
+    
+    loadFiles: function (fileNames, defaultFileHandling, dotNet) {
+        fileNames = (typeof fileNames === 'string' ? [fileNames] : fileNames).map(f => f.trim());
+        fileNames.filter(filename => !this.isLoaded(filename))
+            .forEach(filename => {
+                var element;                
+                if (filename.endsWith('.js') || (defaultFileHandling === 'script' && !filename.endsWith('.css'))) {
+                    element = document.createElement('script');
+                    element.src = filename;
+                    element.async = true;
+                } else {
+                    element = document.createElement('link');
+                    element.href = filename;
+                    element.rel = 'stylesheet';
                 }
+                element.addEventListener('load', function () {
+                    if (dotNet) {
+                        dotNet.invokeMethodAsync('Loaded', filename);
+                    }
+                });
+                document.getElementsByTagName('head')[0].appendChild(element);
             });
-            document.getElementsByTagName('head')[0].appendChild(script);
+    },
+
+    unloadFiles: function (fileNames) {
+        fileNames = typeof fileNames === 'string' ? [fileNames] : fileNames;
+        fileNames.filter(filename => this.isLoaded(filename)).forEach(filename => {
+            var elementsToUnload = Array.from(document.querySelectorAll(`script[src$="${filename}"],link[href$="${filename}"]`));
+            elementsToUnload.forEach(element => {
+                element.parentNode.removeChild(element);
+            });
         });
+    },
+    
+    loadScripts: function (fileNames, dotNet) {
+        this.loadFiles(fileNames, 'script', dotNet);
+    },
+    
+    unloadScripts: function (fileNames) {
+        this.unloadFiles(fileNames);
     },
 
     execute: function (script, params) {
         return eval(script)(window, ...params);
-    },
-
-    unloadScripts: function (fileNames) {
-        var loadedScripts = Array.from(document.querySelectorAll('script'));
-        fileNames = typeof fileNames === 'string' ? [fileNames] : fileNames;
-        loadedScripts.filter(s => fileNames.some(f => s.src.endsWith(f))).forEach(script => {
-            script.parentNode.removeChild(script);
-        });
     },
 
     addCss: function (cssContent) {

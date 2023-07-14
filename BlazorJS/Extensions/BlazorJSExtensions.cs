@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +11,12 @@ namespace BlazorJS
 {
     public static partial class BlazorJSExtensions
     {
+
+        internal static string ToDescriptionString(this Enum val)
+        {
+            DescriptionAttribute[] customAttributes = (DescriptionAttribute[])val.GetType().GetField(val.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false);
+            return customAttributes.Length == 0 ? val.ToString() : customAttributes[0].Description;
+        }
 
         private static async Task<string> GetEmbeddedFileContentAsync(string file)
         {
@@ -46,17 +54,38 @@ namespace BlazorJS
             return runtime.InvokeAsync<string[]>("eval", "Array.from(document.querySelectorAll('script')).map(scriptTag => scriptTag.src)").AsTask();
         }
 
+        public static async Task<IJSRuntime> LoadFilesAsync<T>(this IJSRuntime runtime, DotNetObjectReference<T> reference, DefaultFileType defaultFileHandlingForUnknown, params string[] fileNames) where T : class
+        {
+            var defaultFileHandling = defaultFileHandlingForUnknown.ToDescriptionString();
+            await runtime.InvokeVoidAsync("BlazorJS.loadFiles", fileNames, defaultFileHandling, reference);
+            return runtime;
+        }
+
+        public static Task<IJSRuntime> LoadFilesAsync(this IJSRuntime runtime, params string[] fileNames)
+        {
+            return runtime.LoadFilesAsync<object>(null, DefaultFileType.Script, fileNames);
+        }
+
+        [Obsolete("Use LoadFilesAsync instead")]
         public static async Task<IJSRuntime> LoadJsAsync<T>(this IJSRuntime runtime, DotNetObjectReference<T> reference, params string[] fileNames) where T : class
         {
             await runtime.InvokeVoidAsync("BlazorJS.loadScripts", fileNames, reference);
             return runtime;
         }
 
+        [Obsolete("Use LoadFilesAsync instead")]
         public static Task<IJSRuntime> LoadJsAsync(this IJSRuntime runtime, params string[] fileNames)
         {
             return runtime.LoadJsAsync<object>(null, fileNames);
         }
 
+        public static async Task<IJSRuntime> UnloadFilesAsync(this IJSRuntime runtime, params string[] fileNames)
+        {
+            await runtime.InvokeVoidAsync("BlazorJS.unloadFiles", fileNames);
+            return runtime;
+        }
+
+        [Obsolete("Use UnloadFilesAsync instead")]
         public static async Task<IJSRuntime> UnloadJsAsync(this IJSRuntime runtime, params string[] fileNames)
         {
             await runtime.InvokeVoidAsync("BlazorJS.unloadScripts", fileNames);

@@ -1,7 +1,7 @@
 # BlazorJS
 BlazorJS is a small package to have better interaction with JavaScript.
 
-1. Use a Scripts Component on every page or component to load JavaScript files when not loaded, and unload automatically.
+1. Use a Scripts Component on every page or component to load JavaScript or Stylesheet files when not loaded, and unload automatically on dispose if you want to.
 2. This library provides extensions for IJSRuntime for dynamic invocation that eliminates the requirement to create JS wrapping functions for everything
 3. A possibility to hook events on a Blazor component or page.
 4. Import a module and create a JS object reference from it
@@ -25,6 +25,13 @@ For example open any page like the `index.razor` and add
 ```html
 <Scripts src="js/myjsfile.js"></Scripts>
 ```
+
+This component can also load stylesheet files
+
+```html
+<Scripts src="js/myjsfile.js,css/mystyle.css"></Scripts>
+```
+
 
 #### Include multiple javascript files
 Multiple js files can be loaded with a comma seperator `,`
