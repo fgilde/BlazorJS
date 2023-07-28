@@ -52,7 +52,7 @@ window.BlazorJS = {
         return eval(script)(window, ...params);
     },
 
-    addCss: function (cssContent) {
+    addCss: function (cssContent, id) {
         var css = cssContent,
             head = document.head || document.getElementsByTagName('head')[0],
             style = document.createElement('style');
@@ -60,6 +60,9 @@ window.BlazorJS = {
         head.appendChild(style);
 
         style.type = 'text/css';
+        if (id) {
+            style.id = id;
+        }
         if (style.styleSheet) {
             // This is required for IE8 and below.
             style.styleSheet.cssText = css;

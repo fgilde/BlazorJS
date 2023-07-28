@@ -43,9 +43,9 @@ namespace BlazorJS
             return await runtime.AddCss(css);
         }
 
-        public static async Task<IJSRuntime> AddCss(this IJSRuntime runtime, string cssContent)
+        public static async Task<IJSRuntime> AddCss(this IJSRuntime runtime, string cssContent, string id = "")
         {
-            await runtime.InvokeVoidAsync("BlazorJS.addCss", cssContent);
+            await runtime.InvokeVoidAsync("BlazorJS.addCss", cssContent, id);
             return runtime;
         }
 
