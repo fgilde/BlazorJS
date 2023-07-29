@@ -4,14 +4,20 @@
 
 <h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
+<p class="blazor-js-test">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
     private int currentCount = 0;
     private string name = "flo";
-    
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await jsRuntime.AddCss(".blazor-js-test{color:pink}", "blazor-js-sample");
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     private async Task IncrementCount()
     {
         var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");

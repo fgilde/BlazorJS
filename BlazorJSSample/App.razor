@@ -8,3 +8,12 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    [Inject] IJSRuntime jsRuntime { get; set; }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await jsRuntime.AddCss(".blazor-js-test{background-color:yellow}", "blazor-js-sample");
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

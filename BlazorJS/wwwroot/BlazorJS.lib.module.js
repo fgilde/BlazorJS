@@ -52,24 +52,37 @@ window.BlazorJS = {
         return eval(script)(window, ...params);
     },
 
-    addCss: function (cssContent, id) {
+    addCss: function (cssContent, id, skipIfElementExists) {
         var css = cssContent,
             head = document.head || document.getElementsByTagName('head')[0],
-            style = document.createElement('style');
+            style;
 
-        head.appendChild(style);
-
-        style.type = 'text/css';
         if (id) {
-            style.id = id;
+            style = document.getElementById(id);
         }
+
+        if (!style) {
+            style = document.createElement('style');
+            head.appendChild(style);
+
+            style.type = 'text/css';
+            if (id) {
+                style.id = id;
+            }
+        } else {
+            if (skipIfElementExists) {
+                return;
+            }
+        }
+
         if (style.styleSheet) {
             // This is required for IE8 and below.
-            style.styleSheet.cssText = css;
+            style.styleSheet.cssText += css;
         } else {
             style.appendChild(document.createTextNode(css));
         }
     },
+
 
     EventHelper: new EventHelper()
 };
