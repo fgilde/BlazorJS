@@ -1,0 +1,53 @@
+﻿@using Microsoft.JSInterop
+﻿
+@code {
+
+    /// <summary>
+    /// The dotnet object reference
+    /// </summary>
+    private DotNetObjectReference<BrowserDetect>? dotNetObjectRef;
+
+    [Inject] private IJSRuntime js { get; set; }
+
+    [Parameter]
+    public BrowserInfo? browserInfo { get; set; }
+
+    [Parameter]
+    public EventCallback<BrowserInfo> BrowserInfoChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OSVersionUpdate { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OSArchitectureUpdate { get; set; }
+
+
+    public async ValueTask<BrowserInfo> GetBrowserInfo(DotNetObjectReference<BrowserDetect> dotNetObjectRef)
+    {        
+        return await js.InvokeAsync<BrowserInfo>("BlazorJS.BrowserDetector.detect", dotNetObjectRef);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetObjectRef ??= DotNetObjectReference.Create(this);
+            browserInfo = await GetBrowserInfo(dotNetObjectRef);
+            await BrowserInfoChanged.InvokeAsync(browserInfo);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OSUpdateString(string version)
+    {
+        await OSVersionUpdate.InvokeAsync(version);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task OSArchitectureUpdateString(string cpu)
+    {
+        await OSArchitectureUpdate.InvokeAsync(cpu);
+        await InvokeAsync(StateHasChanged);
+    }
+}

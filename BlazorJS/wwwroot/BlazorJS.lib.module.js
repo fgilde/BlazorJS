@@ -1,4 +1,5 @@
 ﻿import { EventHelper } from './BlazorJS.lib.eventHelper.js';
+import { BrowserDetector, UAParser } from './BlazorJS.lib.browserDetect.js';
 
 window.BlazorJS = {
 
@@ -84,5 +85,7 @@ window.BlazorJS = {
     },
 
 
-    EventHelper: new EventHelper()
+    EventHelper: new EventHelper(),
+    BrowserDetector: new BrowserDetector(),
+    UAParser: UAParser
 };
