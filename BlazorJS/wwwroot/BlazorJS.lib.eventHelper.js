@@ -1,11 +1,20 @@
 ﻿export class EventHelper {
+
+    constructor() {
+        this.listeners = new Map();
+    }
+
     addCustomEventListener(name, dotNetObjectRef, elementSelector) {
         let target = elementSelector ? document.querySelector(elementSelector) : document;
         if (target) {
-            target.addEventListener(name, (event) => {
+            let callback = (event) => {
                 var args = this.cloneEvent(event, true);
                 dotNetObjectRef.invokeMethodAsync('OnCustomEvent', args);
-            });
+            };
+
+            target.addEventListener(name, callback);
+
+            this.listeners.set(dotNetObjectRef._id, { target, name, callback });
         }
         else {
             let observer = new MutationObserver((e) => {
@@ -19,14 +28,29 @@
         }
     }
     addCustomEventListenerWhenNotIn(selector, name, dotNetObjectRef) {
-        document.addEventListener(name || 'click', (event) => {
+        let target = document;
+        name = name || 'click';
+        let callback = (event) => {
             let elements = selector.map(s => Array.from(document.querySelectorAll(s))).reduce((list, item) => list.concat(item)); // selectMany
             if (elements.every(e => !this.isWithin(event, e))) {
                 var args = this.cloneEvent(event, true);
                 dotNetObjectRef.invokeMethodAsync('OnCustomEvent', args);
             }
-        });
+        };
+        document.addEventListener(name, callback);
+        this.listeners.set(dotNetObjectRef._id, { target, name, callback });
     }
+
+    removeCustomEventListener(dotNetObjectRef) {
+        if (dotNetObjectRef) {
+            let listener = this.listeners.get(dotNetObjectRef._id);
+            if (listener) {
+                listener.target.removeEventListener(listener.name, listener.callback);
+                this.listeners.delete(dotNetObjectRef._id);
+            }
+        }
+    }
+
     isWithin(event, element) {
         let rect = element.getBoundingClientRect();
         return (event.clientX > rect.left &&
