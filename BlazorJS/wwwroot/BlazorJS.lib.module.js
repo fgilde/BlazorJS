@@ -4,32 +4,74 @@ import { BrowserDetector, UAParser } from './BlazorJS.lib.browserDetect.js';
 window.BlazorJS = {
 
     isLoaded: function (filename) {
+        var normalizePath = function (path) {
+            // Create an anchor element to use the browser's native ability to resolve URLs
+            var a = document.createElement('a');
+            a.href = path;
+            // Return normalized path without query string or hash
+            return a.href.split(/[?#]/)[0];
+        };
+
+        var normalizedFilename = normalizePath(filename).toLowerCase();
         var loadedElements = Array.from(document.querySelectorAll('script,link'));
-        return loadedElements.some(elm => filename.endsWith(elm.src) || filename.endsWith(elm.href));
+
+        return loadedElements.some(elm => {
+            var elementPath = elm.tagName === 'SCRIPT' ? elm.src : elm.href;
+            return normalizePath(elementPath).toLowerCase() === normalizedFilename;
+        });
     },
+
+    createAndLoadElement: function (filename, defaultFileHandling, dotNet) {
+        return new Promise((resolve, reject) => {
+            var element;
+            var isScript = filename.includes('.js') || (defaultFileHandling === 'script' && !filename.includes('.css'));
+
+            if (isScript) {
+                element = document.createElement('script');
+                element.src = filename;
+                element.async = true;
+            } else {
+                element = document.createElement('link');
+                element.href = filename;
+                element.rel = 'stylesheet';
+            }
+
+            element.addEventListener('load', () => {
+                if (dotNet) {
+                    dotNet.invokeMethodAsync('Loaded', filename);
+                }
+                resolve(filename);
+            });
+
+            element.addEventListener('error', () => {
+                reject(new Error(`Failed to load ${filename}`));
+            });
+
+            document.getElementsByTagName('head')[0].appendChild(element);
+        });
+    },
+
+
     
     loadFiles: function (fileNames, defaultFileHandling, dotNet) {
         fileNames = (typeof fileNames === 'string' ? [fileNames] : fileNames).map(f => f.trim());
         fileNames.filter(filename => !this.isLoaded(filename))
             .forEach(filename => {
-                var element;                
-                if (filename.endsWith('.js') || (defaultFileHandling === 'script' && !filename.endsWith('.css'))) {
-                    element = document.createElement('script');
-                    element.src = filename;
-                    element.async = true;
-                } else {
-                    element = document.createElement('link');
-                    element.href = filename;
-                    element.rel = 'stylesheet';
-                }
-                element.addEventListener('load', function () {
-                    if (dotNet) {
-                        dotNet.invokeMethodAsync('Loaded', filename);
-                    }
-                });
-                document.getElementsByTagName('head')[0].appendChild(element);
+                this.createAndLoadElement(filename, defaultFileHandling, dotNet)
+                    .then(() => {/* File loaded successfully */ })
+                    .catch(error => console.error(error));
             });
     },
+
+    waitFilesLoaded: function (fileNames, defaultFileHandling, dotNet) {
+        fileNames = (typeof fileNames === 'string' ? [fileNames] : fileNames).map(f => f.trim());
+        var loadPromises = fileNames.filter(filename => !this.isLoaded(filename))
+            .map(filename => this.createAndLoadElement(filename, defaultFileHandling, dotNet));
+
+        return Promise.all(loadPromises);
+    },
+
+
 
     unloadFiles: function (fileNames) {
         fileNames = typeof fileNames === 'string' ? [fileNames] : fileNames;

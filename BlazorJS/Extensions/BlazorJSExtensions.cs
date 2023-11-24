@@ -57,7 +57,8 @@ namespace BlazorJS
         public static async Task<IJSRuntime> LoadFilesAsync<T>(this IJSRuntime runtime, DotNetObjectReference<T> reference, DefaultFileType defaultFileHandlingForUnknown, params string[] fileNames) where T : class
         {
             var defaultFileHandling = defaultFileHandlingForUnknown.ToDescriptionString();
-            await runtime.InvokeVoidAsync("BlazorJS.loadFiles", fileNames, defaultFileHandling, reference);
+            //await runtime.InvokeVoidAsync("BlazorJS.loadFiles", fileNames, defaultFileHandling, reference);
+            await runtime.InvokeVoidAsync("BlazorJS.waitFilesLoaded", fileNames, defaultFileHandling, reference);
             return runtime;
         }
 
