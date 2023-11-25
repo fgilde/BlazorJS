@@ -4,6 +4,8 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.JSInterop;
 
@@ -18,8 +20,37 @@ namespace BlazorJS
             return customAttributes.Length == 0 ? val.ToString() : customAttributes[0].Description;
         }
 
-        private static async Task<string> GetEmbeddedFileContentAsync(string file)
+        public static async Task<bool> WaitForNamespaceAsync(this IJSRuntime js, string ns, TimeSpan timeout, TimeSpan checkInterval)
+        {            
+            var startTime = DateTime.Now;
+            while (true)
+            {
+                bool isAvailable = await IsNamespaceAvailableAsync(js, ns);
+                if (isAvailable)                
+                    return true;                
+                if ((DateTime.Now - startTime) > timeout)                
+                    return false;                 
+                await Task.Delay(checkInterval);
+            }
+        }
+        
+        public static async Task<bool> IsNamespaceAvailableAsync(this IJSRuntime js, string ns)
+            => await js.InvokeAsync<bool>("eval", $"typeof {ns} !== 'undefined'");
+
+        public static Task<bool> IsEventWithin(this IJSRuntime runtime, MouseEventArgs args, ElementReference element)
+            => runtime.InvokeAsync<bool>("BlazorJS.EventHelper.isWithin", args, element).AsTask();
+
+        public static async Task<bool> IsElementAvailableAsync(this IJSRuntime js, string elementId)
+            => await js.InvokeAsync<bool>("eval", $"!!document.getElementById('{elementId}')");
+
+        public static async Task RemoveElementAsync(this IJSRuntime js, string id)
         {
+            var script = $"var element = document.getElementById('{id}'); if (element) element.parentNode.removeChild(element);";
+            await js.InvokeVoidAsync("eval", script);
+        }
+
+        private static async Task<string> GetEmbeddedFileContentAsync(string file)
+        {            
             var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
             var fileInfo = embeddedProvider.GetFileInfo(file);
             await using var stream = fileInfo.CreateReadStream();
@@ -98,7 +129,7 @@ namespace BlazorJS
 
 
         public static Task<IJSObjectReference> ImportModuleBlazorJS(this IJSRuntime runtime)
-        {
+        {            
             return runtime.InvokeAsync<IJSObjectReference>("import", "./_content/BlazorJS/BlazorJS.lib.module.js").AsTask();
         }
         
