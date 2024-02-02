@@ -7,7 +7,8 @@ BlazorJS is a small package to have better interaction with JavaScript.
 4. Import a module and create a JS object reference from it
 
 
-### Using Scripts Component
+
+### <ins>Installation</ins>
 
 Add the nuget Package `BlazorJS` to your blazor project
 
@@ -19,7 +20,8 @@ Open `_Imports.razor`from your project and add using for BlazorJS
 
 ```
 
-Now your are able to include every javascipt file easily to your pages or components. 
+### <ins>Scripts Component</ins>
+The scripts component allows you to include every javascipt file easily to your pages or components. 
 For example open any page like the `index.razor` and add 
 
 ```html
@@ -40,7 +42,8 @@ Multiple js files can be loaded with a comma seperator `,`
 <Scripts src="js/myjsfile.js, js/myjsfile2.js"></Scripts>
 ```
 
-### Extension Dynamic JS Invocation
+
+### <ins>Extended Dynamic JS Invocation</ins>
 
 The Dynamic Invocation extension for IJSRuntime allows for dynamic invocation of JavaScript functions from C#. This extension provides a single method, DInvokeVoidAsync, which takes in two arguments: a function to be invoked and an array of objects to be passed as arguments to that function.
 
@@ -116,7 +119,8 @@ It is important to note that the function passed to DInvokeVoidAsync must be a l
 Conclusion
 This extension provides a simple and easy way to invoke JavaScript functions from C# with support for dynamic arguments. 
 
-### Simple event interop helper 
+
+### <ins>Simple event interop helper </ins>
 A simple possibility to hook events that should be extended more but currently supports an easy OnBlur extension for any element.
 
 ```c#
@@ -139,4 +143,94 @@ private BlazorJSEventInterop<PointerEventArgs> _jsEvent;
 _jsEvent = new BlazorJSEventInterop<PointerEventArgs>(_jsRuntime);
 await _jsEvent.AddEventListener("NameOfEvent", async args => { await YourCallBack(); }, ".element-selector");
 
+```
+
+### <ins>BaseComponent for Js wrapper components </ins>
+BlazorJs provides a small base component called `BlazorJsBaseComponent<T>` to create a JS wrapper component. 
+This is a simple way to create a JS object reference from a module and use it in your blazor component.
+1. Create a razor component
+
+<ins>YourComponent.razor</ins>
+```c#
+@inherits BlazorJs.BlazorJsBaseComponent<AudioPlayzor>
+
+<div @ref="ElementReference">
+ 
+</div>
+```
+
+<ins>YourComponent.razor.cs</ins>
+```c#
+public partial class YourComponent
+{
+    protected override string ComponentJsFile() => "./js/PathToYourComponent.js";
+    protected override string ComponentJsInitializeMethodName() => "initializeMethodForYourComponent";
+
+    [Parameter] 
+    public string SomeGeneralParam { get; set; }
+
+    [Parameter, ForJs]
+    public int ParamForJs { get; set; } = 100;
+
+    [Parameter, ForJs("anotherParamForJsWithDifferentNameInJs")]
+    public int AnotherParamForJs { get; set; } = 100;
+    
+    protected override async Task OnJsOptionsChanged()
+    {
+        // This method will automatically be called when a parameter marked with [ForJs] has changed
+        if (JsReference != null)
+            await JsReference.InvokeVoidAsync("setOptions", MyJsOptions());
+    }
+
+    private object MyJsOptions()
+    {
+        return this.AsJsObject(new
+        {
+            configValueWirthoutParam = 123,
+        });
+    }
+
+    /// <summary>
+    /// Gets the JavaScript arguments to pass to the component.
+    /// We override here because by default only the element reference abd dotnet reference is passed but we want to have directly the JsOptions available.
+    /// </summary>
+    public override object[] GetJsArguments() => new[] { ElementReference, CreateDotNetObjectReference(), MyJsOptions() };
+}
+```
+
+2. Create your js file thats located in the path you have defined in `ComponentJsFile()` in this case `./js/PathToYourComponent.js`
+
+<ins>./js/PathToYourComponent.js</ins>
+```javascript
+class YourComponent {
+    elementRef;
+    dotnet;    
+    constructor(elementRef, dotNet, options) {
+        this.elementRef = elementRef;
+        this.dotnet = dotNet;
+        this.createWhatever(options);
+    }
+
+     createWhatever(options) {
+        // Do something with the options
+        console.log(options.paramForJs);
+        console.log(options.anotherParamForJsWithDifferentNameInJs);
+        console.log(options.configValueWirthoutParam);
+     }
+
+    setOptions(options) {
+        // Just update the options with the new ones
+    }
+    
+    dispose() {
+        // Dispose everything you created
+    }
+}
+
+window.YourComponent = YourComponent;
+
+// This method will be called from the BlazorJsBaseComponent and should match the name you have defined in `ComponentJsInitializeMethodName()`
+export function initializeMethodForYourComponent(elementRef, dotnet, options) {
+    return new YourComponent(elementRef, dotnet, options);
+}
 ```
