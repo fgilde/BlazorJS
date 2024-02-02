@@ -20,6 +20,9 @@ namespace BlazorJS
             return customAttributes.Length == 0 ? val.ToString() : customAttributes[0].Description;
         }
 
+        public static Task<bool> WaitForNamespaceAsync(this IJSRuntime js, string ns) 
+            => WaitForNamespaceAsync(js, ns, TimeSpan.FromSeconds(3), TimeSpan.FromMilliseconds(100));
+        
         public static async Task<bool> WaitForNamespaceAsync(this IJSRuntime js, string ns, TimeSpan timeout, TimeSpan checkInterval)
         {            
             var startTime = DateTime.Now;
@@ -132,7 +135,17 @@ namespace BlazorJS
         {            
             return runtime.InvokeAsync<IJSObjectReference>("import", "./_content/BlazorJS/BlazorJS.lib.module.js").AsTask();
         }
-        
+
+        /// <summary>
+        /// Imports a module and creates a JS object reference from it this reference will then be stored under js window object.
+        /// </summary>
+        public static async Task<IJSObjectReference> ImportModuleAsAsync(this IJSRuntime js, string file, string windowNamespace, bool fromDefault = true)
+        {
+            var res = await js.ImportModuleAsync(file);
+            await js.DInvokeVoidAsync((window, reference, name, useDefault) => window[name] = useDefault ? (reference["default"] || reference) : reference, res, windowNamespace, fromDefault);
+            return res;
+        }
+
         public static async Task<IJSObjectReference> ImportModuleAsync(this IJSRuntime js, string file)
         {
             return await js.InvokeAsync<IJSObjectReference>("import", file);
@@ -150,7 +163,7 @@ namespace BlazorJS
         {
             IJSObjectReference jsReference = null;
             var module = await js.ImportModuleAsync(file);
-            if (module != null)
+            if (module != null && !string.IsNullOrEmpty(jsCreateMethod))
             {
                 jsReference = await module.InvokeAsync<IJSObjectReference>(jsCreateMethod, args);
             }
