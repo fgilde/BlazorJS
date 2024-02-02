@@ -152,7 +152,7 @@ This is a simple way to create a JS object reference from a module and use it in
 
 <ins>YourComponent.razor</ins>
 ```c#
-@inherits BlazorJs.BlazorJsBaseComponent<AudioPlayzor>
+@inherits BlazorJs.BlazorJsBaseComponent<YourComponent>
 
 <div @ref="ElementReference">
  
