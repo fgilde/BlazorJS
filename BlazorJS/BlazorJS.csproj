@@ -10,7 +10,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
     <!--<TargetFramework>net7.0</TargetFramework>-->
-    <VersionPrefix>2.1.5</VersionPrefix>
+    <VersionPrefix>2.1.6</VersionPrefix>
     <!--<VersionSuffix>preview.$([System.DateTime]::Now.ToString(`yyMMddHHmmss`))</VersionSuffix>-->
     <LangVersion>10</LangVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

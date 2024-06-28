@@ -66,6 +66,11 @@ namespace BlazorJS
             return runtime.InvokeVoidAsync("alert", message);
         }
 
+        public static async Task<bool> ConfirmAsync(this IJSRuntime runtime, string message)
+        {
+            return await runtime.InvokeAsync<bool>("confirm", message);
+        }
+
         public static async Task<string> PromptAsync(this IJSRuntime runtime, string message = "", string value = "")
         {
             return await runtime.InvokeAsync<string>("prompt", message, value);
