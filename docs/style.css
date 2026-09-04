@@ -92,7 +92,6 @@ p code, li code, td code, h3 code {
 .brand { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.5rem; padding: 0 .4rem; }
 .brand img { width: 42px; height: 42px; filter: drop-shadow(0 0 14px rgba(168, 85, 247, .7)); }
 .brand b { font-size: 1.22rem; letter-spacing: -.02em; }
-.brand small { display: block; color: var(--muted); font-size: .72rem; font-weight: 400; letter-spacing: .04em; }
 
 .toc a {
     display: block;
