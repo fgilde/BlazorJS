@@ -40,8 +40,9 @@ dotnet run --project BlazorJSSample
 1. A **Scripts component** to load JavaScript and stylesheet files per page or component, unloaded again on dispose.
 2. **IJSRuntime extensions for dynamic invocation** that remove the need to write JS wrapper functions for everything.
 3. **Event interop** to hook any browser event, plus `ResizeObserver` and `IntersectionObserver`, onto a Blazor component.
-4. **Clipboard, dialog and DOM helpers** with the browser quirks already handled.
-5. A **base component** to import a module and create a JS object reference from it.
+4. **Saving files** through the File System Access API, streamed, with a download fallback.
+5. **Clipboard, dialog and DOM helpers** with the browser quirks already handled.
+6. A **base component** to import a module and create a JS object reference from it.
 
 Target frameworks: `net10.0`, `net9.0`, `net8.0`, `net7.0`, `net6.0` and `netstandard2.1`.
 
@@ -183,6 +184,31 @@ if (!copied)
 // reading always needs a secure context and a user permission, returns null when denied
 var text = await jsRuntime.ReadClipboardAsync();
 ```
+
+### <ins>Saving files</ins>
+
+Blazor can read files with `<InputFile>`, but writing one back out is still a pile of JavaScript.
+`SaveFileAsync` uses the File System Access API when the browser has it, so the user gets a real save
+dialog and picks the location, and falls back to a plain download otherwise.
+
+```csharp
+// a string, the mime type defaults to text/plain
+await jsRuntime.SaveFileAsync("notes.txt", "Written by BlazorJS");
+
+// bytes
+await jsRuntime.SaveFileAsync("report.pdf", pdfBytes, "application/pdf");
+
+// or a stream, nothing is buffered in memory twice
+await using var stream = File.OpenRead(path);
+var saved = await jsRuntime.SaveFileAsync("export.csv", stream, "text/csv");
+
+if (!saved)
+    Console.WriteLine("The user closed the save dialog.");
+```
+
+The content is streamed with a `DotNetStreamReference`, so large files also work in Blazor Server, where a
+single SignalR message is capped at 32 KB. Call it from a user interaction, browsers reject a save dialog
+that no click asked for.
 
 ### <ins>Simple event interop helper</ins>
 

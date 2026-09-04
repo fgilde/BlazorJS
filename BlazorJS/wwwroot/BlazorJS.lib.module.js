@@ -128,6 +128,57 @@ window.BlazorJS = {
 
 
     /**
+     * Saving a file. Uses the File System Access API when the browser has it, so the user gets a real
+     * save dialog and picks the location, and falls back to a plain download otherwise.
+     */
+    files: {
+        save: async function (fileName, streamRef, mimeType) {
+            var buffer = await streamRef.arrayBuffer();
+            return await window.BlazorJS.files.saveBlob(fileName, new Blob([buffer], { type: mimeType || '' }), mimeType);
+        },
+
+        saveBlob: async function (fileName, blob, mimeType) {
+            if (window.showSaveFilePicker) {
+                try {
+                    var handle = await window.showSaveFilePicker({
+                        suggestedName: fileName,
+                        types: window.BlazorJS.files.pickerTypes(fileName, mimeType)
+                    });
+                    var writable = await handle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                    return true;
+                } catch (e) {
+                    // the user closed the dialog - not an error, and not a reason to download anyway
+                    if (e && e.name === 'AbortError')
+                        return false;
+                    // no permission, cross origin iframe, ... - fall through to the download
+                }
+            }
+
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+            return true;
+        },
+
+        // pre-selects the extension in the save dialog instead of offering 'all files' only
+        pickerTypes: function (fileName, mimeType) {
+            var dot = fileName.lastIndexOf('.');
+            if (dot < 1 || !mimeType)
+                return undefined;
+            var accept = {};
+            accept[mimeType] = [fileName.substring(dot).toLowerCase()];
+            return [{ description: fileName.substring(dot + 1).toUpperCase() + ' file', accept: accept }];
+        }
+    },
+
+    /**
      * Clipboard access with a fallback for browsers / insecure contexts without navigator.clipboard.
      */
     clipboard: {

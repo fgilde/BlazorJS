@@ -38,6 +38,9 @@
         <a href="#dialogs">Dialogs &amp; helpers</a>
         <a href="#modules">Modules</a>
 
+        <div class="toc-group">Files</div>
+        <a href="#files">Save a file</a>
+
         <div class="toc-group">Events</div>
         <a href="#events">Event interop</a>
         <a href="#observers">Resize &amp; visibility</a>
@@ -110,6 +113,10 @@
     <div class="card">
         <h3><a href="#events">Event interop</a></h3>
         <p>Any DOM event, including click-outside, straight into your component.</p>
+    </div>
+    <div class="card">
+        <h3><a href="#files">Save a file</a></h3>
+        <p>A real save dialog through the File System Access API, streamed.</p>
     </div>
     <div class="card">
         <h3><a href="#observers">Resize &amp; visibility</a></h3>
@@ -357,6 +364,52 @@ var (module, instance) = await jsRuntime.ImportModuleAndCreateJsAsync(
 </div>
 
 
+<h2 id="files">Save a file</h2>
+
+<p>
+    Blazor can read files with <code>&lt;InputFile&gt;</code>, but writing one back out is still a pile of
+    JavaScript. <code>SaveFileAsync</code> uses the File System Access API when the browser has it, so the
+    user gets a real save dialog and picks the location, and falls back to a plain download otherwise.
+</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">// a string, the mime type defaults to text/plain
+await jsRuntime.SaveFileAsync("notes.txt", "Written by BlazorJS");
+
+// bytes
+await jsRuntime.SaveFileAsync("report.pdf", pdfBytes, "application/pdf");
+
+// or a stream, nothing is buffered in memory twice
+await using var stream = File.OpenRead(path);
+var saved = await jsRuntime.SaveFileAsync("export.csv", stream, "text/csv");
+
+if (!saved)
+    Console.WriteLine("The user closed the save dialog.");</code></pre>
+</div>
+
+<p>
+    The content is streamed with a <code>DotNetStreamReference</code>, so large files also work in Blazor
+    Server, where a single SignalR message is capped at 32 KB. The <code>mimeType</code> is optional and only
+    pre-selects the file type in the save dialog.
+</p>
+
+<div class="note warn">
+    <strong>Call it from a user interaction.</strong> Browsers reject a save dialog that no click asked for.
+    The return value is <code>false</code> when the user closed the dialog and <code>true</code> when the file
+    was written or the download started.
+</div>
+
+<table>
+    <thead><tr><th>Overload</th><th>Content</th></tr></thead>
+    <tbody>
+        <tr><td><code>SaveFileAsync(fileName, Stream, mimeType, leaveOpen)</code></td><td>Streamed, the stream is disposed unless <code>leaveOpen</code> is set.</td></tr>
+        <tr><td><code>SaveFileAsync(fileName, byte[], mimeType)</code></td><td>Raw bytes.</td></tr>
+        <tr><td><code>SaveFileAsync(fileName, string, mimeType)</code></td><td>UTF-8 text, <code>text/plain</code> by default.</td></tr>
+    </tbody>
+</table>
+
+
 <h2 id="events">Event interop</h2>
 
 <p>
@@ -587,6 +640,7 @@ var options = this.AsJsObject(new { theme = "dark" });</code></pre>
         <tr><td><code>AddCss</code> / <code>LoadCss</code></td><td>Inject css from a string or an embedded resource.</td></tr>
         <tr><td><code>DInvokeVoidAsync</code> / <code>DInvokeAsync&lt;T&gt;</code></td><td>Run a C# lambda as JavaScript.</td></tr>
         <tr><td><code>CopyToClipboardAsync</code> / <code>ReadClipboardAsync</code></td><td>Clipboard access with a fallback.</td></tr>
+        <tr><td><code>SaveFileAsync</code></td><td>Save a file through the File System Access API, streamed.</td></tr>
         <tr><td><code>AlertAsync</code> / <code>ConfirmAsync</code> / <code>PromptAsync</code></td><td>The three browser dialogs.</td></tr>
         <tr><td><code>WaitForNamespaceAsync</code> / <code>IsNamespaceAvailableAsync</code></td><td>Wait for a global to appear.</td></tr>
         <tr><td><code>IsElementAvailableAsync</code> / <code>RemoveElementAsync</code></td><td>Small DOM helpers.</td></tr>

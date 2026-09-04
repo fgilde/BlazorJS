@@ -1,0 +1,113 @@
+@page "/save-file"
+@inject IJSRuntime jsRuntime
+
+<h1>Save a file</h1>
+<p class="lead">
+    <code>SaveFileAsync</code> uses the File System Access API when the browser has it, so you get a real save
+    dialog and pick the location yourself. Browsers without it fall back to a plain download. The content is
+    streamed with a <code>DotNetStreamReference</code>, so even large files work in Blazor Server where a
+    single SignalR message is capped at 32 KB.
+</p>
+
+<div class="card">
+    <h3>Text</h3>
+    <div class="row">
+        <input type="text" @bind="text" @bind:event="oninput" />
+        <button class="btn" @onclick="SaveText">Save notes.txt</button>
+    </div>
+</div>
+
+<div class="card">
+    <h3>CSV export</h3>
+    <p>The classic case: a table in memory, a file on disk.</p>
+    <table>
+        <thead><tr><th>Package</th><th>Downloads</th></tr></thead>
+        <tbody>
+            @foreach (var row in rows)
+            {
+                <tr><td>@row.Name</td><td>@row.Downloads</td></tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn" @onclick="SaveCsv">Save packages.csv</button>
+</div>
+
+<div class="card">
+    <h3>Big binary file</h3>
+    <p>
+        5 MB of random bytes, streamed to the browser. Over SignalR that is roughly 160 messages the
+        stream handles for you.
+    </p>
+    <button class="btn" @onclick="SaveBinary">Save random.bin (5 MB)</button>
+</div>
+
+@if (status != null)
+{
+    <div class="result">@status</div>
+}
+
+<h2>Usage</h2>
+<pre><code>@code_sample</code></pre>
+
+<div class="card">
+    <h3>Good to know</h3>
+    <ul>
+        <li>Call it from a user interaction. Browsers reject a save dialog that no click asked for.</li>
+        <li>It returns <code>false</code> when the user closed the dialog, <code>true</code> when the file was written or the download started.</li>
+        <li>The <code>mimeType</code> pre-selects the file type in the dialog, it is not required.</li>
+    </ul>
+</div>
+
+@code {
+    private string text = "Written by BlazorJS";
+    private string status;
+
+    private readonly (string Name, int Downloads)[] rows =
+    {
+        ("BlazorJS", 128_400),
+        ("MudBlazor.Extensions", 96_100),
+        ("Nextended.Core", 41_800)
+    };
+
+    private const string code_sample = @"// a string, the mime type defaults to text/plain
+await jsRuntime.SaveFileAsync(""notes.txt"", ""Written by BlazorJS"");
+
+// bytes
+await jsRuntime.SaveFileAsync(""report.pdf"", pdfBytes, ""application/pdf"");
+
+// or a stream, nothing is buffered in memory twice
+await using var stream = File.OpenRead(path);
+var saved = await jsRuntime.SaveFileAsync(""export.csv"", stream, ""text/csv"");
+
+if (!saved)
+    Console.WriteLine(""The user closed the save dialog."");";
+
+    private async Task SaveText()
+    {
+        var saved = await jsRuntime.SaveFileAsync("notes.txt", text);
+        Report(saved, "notes.txt");
+    }
+
+    private async Task SaveCsv()
+    {
+        var csv = new StringBuilder("Package;Downloads\n");
+        foreach (var row in rows)
+            csv.Append(row.Name).Append(';').Append(row.Downloads).Append('\n');
+
+        var saved = await jsRuntime.SaveFileAsync("packages.csv", csv.ToString(), "text/csv");
+        Report(saved, "packages.csv");
+    }
+
+    private async Task SaveBinary()
+    {
+        var bytes = new byte[5 * 1024 * 1024];
+        Random.Shared.NextBytes(bytes);
+
+        await using var stream = new MemoryStream(bytes);
+        var saved = await jsRuntime.SaveFileAsync("random.bin", stream, "application/octet-stream");
+        Report(saved, "random.bin");
+    }
+
+    private void Report(bool saved, string fileName)
+        => status = saved ? $"{fileName} is on its way." : "You closed the save dialog, nothing was written.";
+}
