@@ -1,0 +1,62 @@
+@page "/scripts"
+@inject IJSRuntime jsRuntime
+
+<h1>Scripts &amp; Styles</h1>
+<p class="lead">
+    The <code>&lt;Scripts&gt;</code> component loads files when they are not loaded yet and removes them
+    again when the page is disposed. This page loads <code>js/sample.js</code> and <code>js/sample2.js</code>.
+</p>
+
+<Scripts src="js/sample.js, js/sample2.js" SourceLoaded="OnSourceLoaded" />
+
+<div class="card">
+    <h3>Loaded on this page</h3>
+    @if (loaded.Count == 0)
+    {
+        <p class="lead">Waiting for the load callback...</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var file in loaded)
+            {
+                <li><code>@file</code></li>
+            }
+        </ul>
+    }
+    <div class="row">
+        <button class="btn" @onclick="CallLoadedFunction">Call otherSample.calculateSum(21, 21)</button>
+    </div>
+    @if (sum != null)
+    {
+        <div class="result">Result from the loaded script: <b>@sum</b></div>
+    }
+</div>
+
+<h2>Usage</h2>
+<pre><code>@code_sample</code></pre>
+
+@code {
+    private readonly List<string> loaded = new();
+    private int? sum;
+
+    private const string code_sample = @"<Scripts src=""js/sample.js, js/sample2.js"" SourceLoaded=""OnSourceLoaded"" />
+<Scripts src=""css/mystyle.css"" />
+
+@* Keep the file after the page is gone *@
+<Scripts src=""js/sample.js"" UnloadOnDispose=""false"" />
+
+@* Load as early as possible instead of after the first render *@
+<Scripts src=""js/sample.js"" SourceLoadBehaviour=""LoadBehaviour.OnInitializedAsync"" />";
+
+    private void OnSourceLoaded(string file)
+    {
+        loaded.Add(file);
+        StateHasChanged();
+    }
+
+    private async Task CallLoadedFunction()
+    {
+        sum = await jsRuntime.InvokeAsync<int>("otherSample.calculateSum", 21, 21);
+    }
+}

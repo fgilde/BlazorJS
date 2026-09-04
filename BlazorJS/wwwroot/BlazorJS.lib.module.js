@@ -127,6 +127,40 @@ window.BlazorJS = {
     },
 
 
+    /**
+     * Clipboard access with a fallback for browsers / insecure contexts without navigator.clipboard.
+     */
+    clipboard: {
+        write: async function (text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch (e) { /* fall through to the legacy path */ }
+
+            var area = document.createElement('textarea');
+            area.value = text;
+            area.setAttribute('readonly', '');
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            document.body.appendChild(area);
+            area.select();
+            var copied = false;
+            try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+            document.body.removeChild(area);
+            return copied;
+        },
+
+        read: async function () {
+            try {
+                if (navigator.clipboard && window.isSecureContext)
+                    return await navigator.clipboard.readText();
+            } catch (e) { /* permission denied or unsupported */ }
+            return null;
+        }
+    },
+
     EventHelper: new EventHelper(),
     BrowserDetector: new BrowserDetector(),
     UAParser: UAParser

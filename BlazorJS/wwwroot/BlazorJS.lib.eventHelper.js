@@ -45,10 +45,65 @@
         if (dotNetObjectRef) {
             let listener = this.listeners.get(dotNetObjectRef._id);
             if (listener) {
-                listener.target.removeEventListener(listener.name, listener.callback);
+                if (listener.dispose)
+                    listener.dispose();
+                else
+                    listener.target.removeEventListener(listener.name, listener.callback);
                 this.listeners.delete(dotNetObjectRef._id);
             }
         }
+    }
+
+    /**
+     * Resolves a selector as soon as the element exists in the DOM.
+     * Blazor renders after the interop call in many cases, so waiting is required.
+     */
+    whenElement(elementSelector, fallback, callback) {
+        let element = elementSelector ? document.querySelector(elementSelector) : fallback;
+        if (element) {
+            callback(element);
+            return;
+        }
+        let observer = new MutationObserver(() => {
+            let found = document.querySelector(elementSelector);
+            if (found) {
+                observer.disconnect();
+                callback(found);
+            }
+        });
+        observer.observe(document, { childList: true, subtree: true });
+    }
+
+    /**
+     * Reports size changes of an element (ResizeObserver). Without a selector the document element is observed.
+     */
+    observeResize(elementSelector, dotNetObjectRef) {
+        this.whenElement(elementSelector, document.documentElement, (element) => {
+            let observer = new ResizeObserver(entries => {
+                let rect = entries[0].contentRect;
+                dotNetObjectRef.invokeMethodAsync('OnCustomEvent', {
+                    width: rect.width, height: rect.height, top: rect.top, left: rect.left
+                });
+            });
+            observer.observe(element);
+            this.listeners.set(dotNetObjectRef._id, { dispose: () => observer.disconnect() });
+        });
+    }
+
+    /**
+     * Reports whether an element is inside the viewport (IntersectionObserver).
+     */
+    observeVisibility(elementSelector, dotNetObjectRef, threshold) {
+        this.whenElement(elementSelector, document.documentElement, (element) => {
+            let observer = new IntersectionObserver(entries => {
+                let entry = entries[0];
+                dotNetObjectRef.invokeMethodAsync('OnCustomEvent', {
+                    isVisible: entry.isIntersecting, ratio: entry.intersectionRatio
+                });
+            }, { threshold: threshold || 0 });
+            observer.observe(element);
+            this.listeners.set(dotNetObjectRef._id, { dispose: () => observer.disconnect() });
+        });
     }
 
     isWithin(event, element) {

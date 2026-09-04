@@ -40,6 +40,28 @@ public class BlazorJSEventInterop<TEventArgs> : IAsyncDisposable
         return this;
     }
 
+    /// <summary>
+    /// Observes the size of an element with a ResizeObserver and reports every change.
+    /// Without a selector the document element is observed, which makes it a viewport resize listener.
+    /// Use <see cref="ElementSizeArgs"/> as TEventArgs.
+    /// </summary>
+    public async Task<BlazorJSEventInterop<TEventArgs>> OnResize(Func<TEventArgs, Task> callback, string elementSelector = null)
+    {
+        await _jsRuntime.InvokeVoidAsync("BlazorJS.EventHelper.observeResize", elementSelector, Register(callback));
+        return this;
+    }
+
+    /// <summary>
+    /// Observes whether an element is inside the viewport with an IntersectionObserver.
+    /// Useful for lazy loading or infinite scrolling. Use <see cref="ElementVisibilityArgs"/> as TEventArgs.
+    /// </summary>
+    /// <param name="threshold">Part of the element that has to be visible before the callback fires, 0 to 1.</param>
+    public async Task<BlazorJSEventInterop<TEventArgs>> OnVisibilityChanged(Func<TEventArgs, Task> callback, string elementSelector, double threshold = 0)
+    {
+        await _jsRuntime.InvokeVoidAsync("BlazorJS.EventHelper.observeVisibility", elementSelector, Register(callback), threshold);
+        return this;
+    }
+
     public async ValueTask DisposeAsync()
     {
         foreach (var dotNetObjectReference in DotNetObjectReferences)

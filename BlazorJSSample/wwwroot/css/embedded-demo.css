@@ -1,0 +1,7 @@
+/* Embedded as EmbeddedResource, loaded at runtime with jsRuntime.LoadCss("css/embedded-demo.css") */
+.embedded-demo {
+    border: 1px solid #22d3ee;
+    background: rgba(34, 211, 238, .1);
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+}

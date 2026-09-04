@@ -1,11 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorJS\BlazorJS.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Loaded at runtime through jsRuntime.LoadCss(...) to demo embedded stylesheets -->
+    <EmbeddedResource Include="wwwroot\css\embedded-demo.css" />
   </ItemGroup>
 
 </Project>

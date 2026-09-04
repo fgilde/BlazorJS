@@ -1,0 +1,88 @@
+@page "/observers"
+@implements IAsyncDisposable
+@inject IJSRuntime jsRuntime
+
+<h1>Resize &amp; visibility</h1>
+<p class="lead">
+    <code>OnResize</code> wraps a <code>ResizeObserver</code>, <code>OnVisibilityChanged</code> an
+    <code>IntersectionObserver</code>. Both report into a C# callback and are disconnected when the interop
+    instance is disposed.
+</p>
+
+<div class="card">
+    <h3>ResizeObserver</h3>
+    <p>Drag the corner of the box.</p>
+    <div class="resize-box observed-box">
+        <span class="mono">@($"{size.Width:0} x {size.Height:0}")</span>
+    </div>
+</div>
+
+<div class="card">
+    <h3>IntersectionObserver</h3>
+    <p>
+        Status of the target below:
+        <span class="badge @(visibility.IsVisible ? "on" : "")">
+            @(visibility.IsVisible ? $"visible ({visibility.Ratio:P0})" : "out of view")
+        </span>
+    </p>
+    <div class="scroll-spacer">scroll down</div>
+    <div class="visibility-target observed-target">
+        <b>Watched element</b>
+        <div class="lead">Half of it has to be visible before the callback fires.</div>
+    </div>
+    <div class="scroll-spacer">scroll back up</div>
+</div>
+
+<h2>Usage</h2>
+<pre><code>@code_sample</code></pre>
+
+@code {
+    private BlazorJSEventInterop<ElementSizeArgs> resizeEvents;
+    private BlazorJSEventInterop<ElementVisibilityArgs> visibilityEvents;
+    private ElementSizeArgs size = new();
+    private ElementVisibilityArgs visibility = new();
+
+    private const string code_sample = @"private BlazorJSEventInterop<ElementSizeArgs> _resize;
+private BlazorJSEventInterop<ElementVisibilityArgs> _visibility;
+
+_resize = new BlazorJSEventInterop<ElementSizeArgs>(jsRuntime);
+await _resize.OnResize(OnResized, "".observed-box"");   // without a selector: the whole viewport
+
+_visibility = new BlazorJSEventInterop<ElementVisibilityArgs>(jsRuntime);
+await _visibility.OnVisibilityChanged(OnVisibilityChanged, "".observed-target"", threshold: 0.5);
+
+private Task OnResized(ElementSizeArgs args) => ...   // Width, Height, Top, Left
+private Task OnVisibilityChanged(ElementVisibilityArgs args) => ...   // IsVisible, Ratio";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        resizeEvents = new BlazorJSEventInterop<ElementSizeArgs>(jsRuntime);
+        await resizeEvents.OnResize(OnResized, ".observed-box");
+
+        visibilityEvents = new BlazorJSEventInterop<ElementVisibilityArgs>(jsRuntime);
+        await visibilityEvents.OnVisibilityChanged(OnVisibilityChanged, ".observed-target", 0.5);
+    }
+
+    private Task OnResized(ElementSizeArgs args)
+    {
+        size = args;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnVisibilityChanged(ElementVisibilityArgs args)
+    {
+        visibility = args;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (resizeEvents != null)
+            await resizeEvents.DisposeAsync();
+        if (visibilityEvents != null)
+            await visibilityEvents.DisposeAsync();
+    }
+}

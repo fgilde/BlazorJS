@@ -1,0 +1,64 @@
+@page "/dynamic-invoke"
+@inject IJSRuntime jsRuntime
+
+<h1>Dynamic JS invocation</h1>
+<p class="lead">
+    <code>DInvokeVoidAsync</code> and <code>DInvokeAsync&lt;T&gt;</code> send a C# lambda to the browser and
+    execute it there. No <code>.js</code> file, no wrapper function. Variables from your component have to be
+    passed as parameters, because only the source text of the lambda is transferred.
+</p>
+
+<div class="card">
+    <h3>Counter</h3>
+    <p>Current count: <b>@currentCount</b></p>
+    <div class="row">
+        <button class="btn" @onclick="IncrementAndAlert">Increment &amp; alert from JS</button>
+        <button class="btn secondary" @onclick="AskForName">Prompt for a name</button>
+        <button class="btn secondary" @onclick="ReadTitle">Read document.title</button>
+    </div>
+    @if (!string.IsNullOrEmpty(result))
+    {
+        <div class="result">@result</div>
+    }
+</div>
+
+<h2>Usage</h2>
+<pre><code>@code_sample</code></pre>
+
+@code {
+    private int currentCount;
+    private string result;
+
+    private const string code_sample = @"// no parameters
+await jsRuntime.DInvokeVoidAsync(window => window.alert(""test""));
+
+// pass values from your component explicitly
+await jsRuntime.DInvokeVoidAsync((window, c) => window.alert(c), currentCount);
+
+// or by name, so the lambda can use them like local variables
+await jsRuntime.DInvokeVoidAsync(window => window.alert(currentCount + "" - "" + name),
+                                 JSArgument.For(currentCount).And(name));
+
+// with a return value
+var title = await jsRuntime.DInvokeAsync<string>(document => document.title);";
+
+    private async Task IncrementAndAlert()
+    {
+        currentCount++;
+        var name = "BlazorJS";
+        await jsRuntime.DInvokeVoidAsync(window => window.alert(name + " counted to " + currentCount),
+            JSArgument.For(currentCount).And(name));
+    }
+
+    private async Task AskForName()
+    {
+        var name = await jsRuntime.DInvokeAsync<string>(window => window.prompt("Your name?", "Flo"));
+        result = string.IsNullOrEmpty(name) ? "Nothing entered." : $"Hello {name}!";
+    }
+
+    private async Task ReadTitle()
+    {
+        var title = await jsRuntime.DInvokeAsync<string>(document => document.title);
+        result = $"document.title = {title}";
+    }
+}

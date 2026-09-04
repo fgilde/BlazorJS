@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://quickrun.org/quickrun.schema.json
+# Starts the BlazorJS sample app, a live demo of every feature of the package.
+version: 1
+name: BlazorJS Sample
+description: Live demo of the BlazorJS package - script loading, dynamic JS invocation, event interop, observers and clipboard.
+icon: icon.png
+docs: https://fgilde.github.io/BlazorJS/
+requires:
+  - tool: dotnet
+    version: ">=10.0"
+    install: https://dot.net
+env:
+  ASPNETCORE_ENVIRONMENT: Development
+  ASPNETCORE_URLS: http://localhost:5080
+setup:
+  - dotnet restore BlazorJS.sln
+tasks:
+  - name: sample
+    # --no-launch-profile so the ASPNETCORE_URLS above wins over launchSettings.json
+    run: dotnet run --project BlazorJSSample --no-launch-profile
+    readyWhen: {http: http://localhost:5080}
+    open: true

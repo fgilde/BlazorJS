@@ -52,7 +52,6 @@
         var deviceModel = result.device.model ?? '';
         var deviceType = result.device.type ?? '';
 
-        console.log('Device model ->' + deviceModel);
         if (deviceModel === 'iPad' || isiPad) {
             deviceType = 'iPad';
             deviceModel = this.getModels().toString();
@@ -324,8 +323,9 @@
         let glVendor = 'Unknown';
 
         if (!this.glRenderer) {
+            // getContext returns null when WebGL is unavailable (headless, disabled GPU, hardened privacy settings)
             const gl = document.createElement("canvas").getContext("webgl");
-            const ext = gl.getExtension("WEBGL_debug_renderer_info");
+            const ext = gl && gl.getExtension("WEBGL_debug_renderer_info");
             if (ext) {
                 this.glRenderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
                 glVendor = gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);

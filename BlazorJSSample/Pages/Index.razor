@@ -1,17 +1,46 @@
-﻿@page "/"
-@using BlazorJS
-@inject IJSRuntime jsRuntime
+@page "/"
 
-<h1>Hello, world!</h1>
+<h1>Better JavaScript interaction for <span class="gradient-text">Blazor</span></h1>
+<p class="lead">
+    BlazorJS loads scripts and styles per page or component, invokes JavaScript without writing wrapper
+    functions, hooks browser events onto your components and wraps JS libraries in a base component.
+    Every feature has a live page in this sample.
+</p>
 
-<Scripts src="js/sample.js"></Scripts>
+<div class="card-grid">
+    <div class="card">
+        <h3>Scripts &amp; Styles</h3>
+        <p>Load a file when a page needs it, unload it on dispose.</p>
+        <a href="scripts">Open demo</a>
+    </div>
+    <div class="card">
+        <h3>Dynamic invocation</h3>
+        <p>Write JavaScript as a C# lambda, no <code>.js</code> wrapper needed.</p>
+        <a href="dynamic-invoke">Open demo</a>
+    </div>
+    <div class="card">
+        <h3>Clipboard</h3>
+        <p><code>CopyToClipboardAsync</code> with a fallback for insecure contexts.</p>
+        <a href="clipboard">Open demo</a>
+    </div>
+    <div class="card">
+        <h3>Resize &amp; visibility</h3>
+        <p>ResizeObserver and IntersectionObserver as C# callbacks.</p>
+        <a href="observers">Open demo</a>
+    </div>
+    <div class="card">
+        <h3>Event interop</h3>
+        <p>Any DOM event, including click-outside, straight into your component.</p>
+        <a href="events">Open demo</a>
+    </div>
+    <div class="card">
+        <h3>JS component base</h3>
+        <p>Import a module, create the JS object, keep parameters in sync.</p>
+        <a href="js-component">Open demo</a>
+    </div>
+</div>
 
-Welcome to your new app.
-
-@code {
-
-    protected override async Task OnAfterRenderAsync(bool f)
-    {
-        await base.OnAfterRenderAsync(f);
-    }
-}
+<h2>Installation</h2>
+<pre><code>dotnet add package BlazorJS</code></pre>
+<p>Then add the using to your <code>_Imports.razor</code>:</p>
+<pre><code>@("@using BlazorJS")</code></pre>

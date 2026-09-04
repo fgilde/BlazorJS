@@ -1,42 +1,28 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">BlazorJS</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
+<a class="brand" href="">
+    <img src="logo.png" alt="BlazorJS" />
+    <span class="gradient-text">BlazorJS</span>
+</a>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="browser-detect">
-                <span class="oi oi-home" aria-hidden="true"></span> Browser Detect
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>
-    </ul>
-</div>
+<nav>
+    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Overview</NavLink>
 
-@code {
-    private bool collapseNavMenu = true;
+    <div class="nav-section">Loading</div>
+    <NavLink class="nav-link" href="scripts">Scripts &amp; Styles</NavLink>
+    <NavLink class="nav-link" href="css">Runtime CSS</NavLink>
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    <div class="nav-section">Interop</div>
+    <NavLink class="nav-link" href="dynamic-invoke">Dynamic invocation</NavLink>
+    <NavLink class="nav-link" href="clipboard">Clipboard</NavLink>
+    <NavLink class="nav-link" href="js-component">JS component</NavLink>
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+    <div class="nav-section">Events</div>
+    <NavLink class="nav-link" href="events">Event interop</NavLink>
+    <NavLink class="nav-link" href="observers">Resize &amp; visibility</NavLink>
+
+    <div class="nav-section">Browser</div>
+    <NavLink class="nav-link" href="browser-detect">Browser detect</NavLink>
+</nav>
+
+<div class="nav-section">Links</div>
+<a class="nav-link" href="https://github.com/fgilde/BlazorJS" target="_blank">GitHub</a>
+<a class="nav-link" href="https://www.nuget.org/packages/BlazorJS" target="_blank">NuGet</a>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlazorJS &mdash; better JavaScript interaction for Blazor</title>
+<meta name="description" content="BlazorJS loads scripts and styles per page or component, invokes JavaScript straight from C# lambdas, hooks browser events onto your components and wraps JS libraries in a base component.">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta property="og:title" content="BlazorJS">
+<meta property="og:description" content="Better JavaScript interaction for Blazor.">
+<meta property="og:image" content="https://fgilde.github.io/BlazorJS/logo.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/tomorrow-night.min.css">
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">&#9776; Menu</button>
+
+<div class="shell">
+
+<aside class="sidebar" id="sidebar">
+    <a class="brand" href="#top">
+        <img src="logo.png" alt="">
+        <span><b class="gradient-text">BlazorJS</b><small>v2.4 &middot; net6 &ndash; net10</small></span>
+    </a>
+
+    <nav class="toc" id="toc">
+        <a href="#top">Overview</a>
+        <a href="#installation">Installation</a>
+
+        <div class="toc-group">Loading files</div>
+        <a href="#scripts">Scripts &amp; Styles</a>
+        <a href="#css">CSS at runtime</a>
+
+        <div class="toc-group">Interop</div>
+        <a href="#dynamic">Dynamic invocation</a>
+        <a href="#clipboard">Clipboard</a>
+        <a href="#dialogs">Dialogs &amp; helpers</a>
+        <a href="#modules">Modules</a>
+
+        <div class="toc-group">Events</div>
+        <a href="#events">Event interop</a>
+        <a href="#observers">Resize &amp; visibility</a>
+
+        <div class="toc-group">Components</div>
+        <a href="#base-component">JS base component</a>
+        <a href="#forjs">ForJs attribute</a>
+        <a href="#browser-detect">Browser detect</a>
+
+        <div class="toc-group">Reference</div>
+        <a href="#api">API overview</a>
+        <a href="#frameworks">Target frameworks</a>
+
+        <div class="toc-group">Links</div>
+        <a href="https://github.com/fgilde/BlazorJS" target="_blank" rel="noopener">GitHub &#8599;</a>
+        <a href="https://www.nuget.org/packages/BlazorJS" target="_blank" rel="noopener">NuGet &#8599;</a>
+    </nav>
+</aside>
+
+<main id="top">
+
+<div class="hero">
+    <img class="hero-logo" src="logo.png" alt="BlazorJS logo">
+    <div>
+        <h1>Better JavaScript interaction<br>for <span class="gradient-text">Blazor</span></h1>
+        <p class="tagline">
+            Load scripts per page instead of per app, call JavaScript without writing wrapper functions,
+            hook browser events onto your components and wrap JS libraries in a base component.
+        </p>
+    </div>
+</div>
+
+<div class="badges">
+    <a href="https://quickrun.org/run?repo=fgilde/BlazorJS" target="_blank" rel="noopener"><img src="https://quickrun.org/badge.svg" alt="Run the sample with QuickRun"></a>
+    <a href="https://www.nuget.org/packages/BlazorJS" target="_blank" rel="noopener"><img src="https://img.shields.io/nuget/v/BlazorJS?style=flat-square&amp;color=8b5cf6&amp;label=nuget" alt="NuGet version"></a>
+    <a href="https://www.nuget.org/packages/BlazorJS" target="_blank" rel="noopener"><img src="https://img.shields.io/nuget/dt/BlazorJS?style=flat-square&amp;color=22d3ee&amp;label=downloads" alt="NuGet downloads"></a>
+    <a href="https://github.com/fgilde/BlazorJS/blob/master/LICENSE" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/license-MIT-6366f1?style=flat-square" alt="MIT license"></a>
+</div>
+
+<ul class="tfm-list">
+    <li class="new">net10.0</li>
+    <li>net9.0</li>
+    <li>net8.0</li>
+    <li>net7.0</li>
+    <li>net6.0</li>
+    <li>netstandard2.1</li>
+</ul>
+
+<p>
+    BlazorJS is a small package with no dependencies beyond the Blazor framework itself. It works in Blazor
+    Server, Blazor WebAssembly and Blazor Web Apps.
+</p>
+
+<div class="note">
+    <strong>Try it.</strong> The repository ships a sample app with a live page for every feature. With
+    <a href="https://quickrun.org" target="_blank" rel="noopener">QuickRun</a> it is
+    <a href="https://quickrun.org/run?repo=fgilde/BlazorJS" target="_blank" rel="noopener">one click</a>,
+    otherwise <code>dotnet run --project BlazorJSSample</code>.
+</div>
+
+<div class="card-grid">
+    <div class="card">
+        <h3><a href="#scripts">Scripts &amp; Styles</a></h3>
+        <p>Load a file when a page needs it, unload it again on dispose.</p>
+    </div>
+    <div class="card">
+        <h3><a href="#dynamic">Dynamic invocation</a></h3>
+        <p>Write JavaScript as a C# lambda &mdash; no <code>.js</code> wrapper needed.</p>
+    </div>
+    <div class="card">
+        <h3><a href="#events">Event interop</a></h3>
+        <p>Any DOM event, including click-outside, straight into your component.</p>
+    </div>
+    <div class="card">
+        <h3><a href="#observers">Resize &amp; visibility</a></h3>
+        <p>ResizeObserver and IntersectionObserver as C# callbacks.</p>
+    </div>
+    <div class="card">
+        <h3><a href="#clipboard">Clipboard</a></h3>
+        <p>Copy and read with a fallback for insecure contexts.</p>
+    </div>
+    <div class="card">
+        <h3><a href="#base-component">JS base component</a></h3>
+        <p>Import a module, create the JS object, keep parameters in sync.</p>
+    </div>
+</div>
+
+
+<h2 id="installation">Installation</h2>
+
+<div class="code">
+    <div class="code-head">cli<button class="copy">copy</button></div>
+    <pre><code class="language-bash">dotnet add package BlazorJS</code></pre>
+</div>
+
+<p>Add the namespace to your <code>_Imports.razor</code>:</p>
+
+<div class="code">
+    <div class="code-head">_Imports.razor<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">@using BlazorJS
+@using BlazorJS.Attributes
+@using BlazorJS.JsInterop</code></pre>
+</div>
+
+<p>
+    That is all. The browser side is registered automatically through a Blazor JS initializer, so there is
+    no service registration and no script tag to add.
+</p>
+
+
+<h2 id="scripts">Scripts &amp; Styles</h2>
+
+<p>
+    The <code>&lt;Scripts&gt;</code> component loads JavaScript files for the page or component it sits on.
+    A file that is already in the document is skipped, and on dispose the file is removed again &mdash;
+    so a page only pays for what it actually uses.
+</p>
+
+<div class="code">
+    <div class="code-head">razor<button class="copy">copy</button></div>
+    <pre><code class="language-html">&lt;Scripts src="js/myjsfile.js"&gt;&lt;/Scripts&gt;
+
+&lt;!-- multiple files, comma separated --&gt;
+&lt;Scripts src="js/myjsfile.js, js/myjsfile2.js"&gt;&lt;/Scripts&gt;
+
+&lt;!-- stylesheets work too, the extension decides --&gt;
+&lt;Scripts src="js/myjsfile.js, css/mystyle.css"&gt;&lt;/Scripts&gt;
+
+&lt;!-- or be explicit about it --&gt;
+&lt;Styles src="css/mystyle.css"&gt;&lt;/Styles&gt;</code></pre>
+</div>
+
+<h3>Parameters</h3>
+
+<table>
+    <thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+        <tr><td><code>Src</code></td><td>&mdash;</td><td>One or more files, comma separated.</td></tr>
+        <tr><td><code>UnloadOnDispose</code></td><td><code>true</code></td><td>Removes the elements again when the component is disposed. Set to <code>false</code> for libraries that must survive navigation.</td></tr>
+        <tr><td><code>SourceLoadBehaviour</code></td><td><code>OnAfterRender</code></td><td><code>OnInitialized</code>, <code>OnInitializedAsync</code>, <code>OnAfterRender</code> or <code>OnAfterRenderAsync</code>.</td></tr>
+        <tr><td><code>SourceLoaded</code></td><td>&mdash;</td><td><code>EventCallback&lt;string&gt;</code> raised per file once it finished loading.</td></tr>
+    </tbody>
+</table>
+
+<div class="code">
+    <div class="code-head">razor<button class="copy">copy</button></div>
+    <pre><code class="language-html">&lt;Scripts src="js/chart.js"
+         SourceLoadBehaviour="LoadBehaviour.OnInitializedAsync"
+         UnloadOnDispose="false"
+         SourceLoaded="OnScriptLoaded" /&gt;
+
+@code {
+    private void OnScriptLoaded(string file) =&gt; Console.WriteLine($"{file} is ready");
+}</code></pre>
+</div>
+
+<p>The same thing from code, without a component:</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">await jsRuntime.LoadFilesAsync("js/chart.js", "css/chart.css");
+await jsRuntime.UnloadFilesAsync("js/chart.js");
+
+// wait until a global is really there before using it
+if (await jsRuntime.WaitForNamespaceAsync("Chart"))
+    await jsRuntime.DInvokeVoidAsync(window =&gt; window.console.log("Chart is loaded"));</code></pre>
+</div>
+
+
+<h2 id="css">CSS at runtime</h2>
+
+<p>
+    <code>AddCss</code> injects a stylesheet from a string, <code>LoadCss</code> reads it from an
+    <code>EmbeddedResource</code>. Handy for component libraries that ship their styles inside the assembly.
+</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">// from a string. The id makes the call repeatable instead of stacking up style tags
+await jsRuntime.AddCss(".demo { color: #22d3ee }", "my-styles", skipIfElementExists: true);
+
+// from an &lt;EmbeddedResource&gt; of the calling assembly
+await jsRuntime.LoadCss("css/component.css");
+
+// or from a specific assembly
+await jsRuntime.LoadCss("css/component.css", typeof(MyComponent).Assembly);</code></pre>
+</div>
+
+<div class="code">
+    <div class="code-head">csproj<button class="copy">copy</button></div>
+    <pre><code class="language-xml">&lt;ItemGroup&gt;
+  &lt;EmbeddedResource Include="wwwroot\css\component.css" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+</div>
+
+
+<h2 id="dynamic">Dynamic JS invocation</h2>
+
+<p>
+    Normally every JavaScript call needs a named function somewhere in a <code>.js</code> file.
+    <code>DInvokeVoidAsync</code> and <code>DInvokeAsync&lt;T&gt;</code> skip that: they take a C# lambda,
+    send its source text to the browser and run it there.
+</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">await jsRuntime.DInvokeVoidAsync(window =&gt; window.alert("test"));
+
+var answer = await jsRuntime.DInvokeAsync&lt;string&gt;(window =&gt; window.prompt("Your name?"));
+var title  = await jsRuntime.DInvokeAsync&lt;string&gt;(document =&gt; document.title);</code></pre>
+</div>
+
+<h3>Passing values</h3>
+
+<div class="note warn">
+    <strong>Only the text of the lambda is transferred.</strong> Variables of your component do not exist in
+    the browser, so they have to be passed as arguments.
+</div>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">// DOES NOT WORK - currentCount is unknown in the browser
+await jsRuntime.DInvokeVoidAsync(window =&gt; window.alert(currentCount));
+
+// works: the value is a lambda parameter
+await jsRuntime.DInvokeVoidAsync((window, c) =&gt; window.alert(c), currentCount);
+await jsRuntime.DInvokeVoidAsync((window, c, name) =&gt; {
+    window.alert(c);
+    window.console.log(name);
+}, currentCount, "Flo");
+
+// works too: JSArgument keeps the original variable names
+await jsRuntime.DInvokeVoidAsync(window =&gt; window.alert(currentCount + " - " + name),
+                                 JSArgument.For(currentCount).And(name));</code></pre>
+</div>
+
+<h3>Reusing results</h3>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">var hash = await jsRuntime.DInvokeAsync&lt;string&gt;(window =&gt;
+{
+    window.alert(currentCount);
+    return window.location.hash + "_" + currentCount;
+}, JSArgument.For(currentCount));
+
+await jsRuntime.DInvokeVoidAsync(document =&gt; document.location.hash = hash,
+                                 JSArgument.For(hash));</code></pre>
+</div>
+
+<p>
+    Up to ten parameters are supported, and every overload also accepts a
+    <code>CancellationToken</code>.
+</p>
+
+
+<h2 id="clipboard">Clipboard</h2>
+
+<p>
+    <code>navigator.clipboard</code> only exists in a secure context, which makes it a small pile of
+    boilerplate in practice. <code>CopyToClipboardAsync</code> uses it when it is available and falls back to
+    the legacy <code>execCommand</code> path otherwise, so it also works on plain http during development.
+</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">var copied = await jsRuntime.CopyToClipboardAsync("Copied with BlazorJS");
+if (!copied)
+    await jsRuntime.AlertAsync("The browser refused the copy.");
+
+// reading always needs a secure context and a user permission
+var text = await jsRuntime.ReadClipboardAsync();   // null when denied</code></pre>
+</div>
+
+<div class="note">
+    <strong>Note:</strong> <code>ReadClipboardAsync</code> returns <code>null</code> instead of throwing when
+    the browser denies access, so a denied permission does not need a try/catch.
+</div>
+
+
+<h2 id="dialogs">Dialogs &amp; small helpers</h2>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">await jsRuntime.AlertAsync("Saved");
+var ok    = await jsRuntime.ConfirmAsync("Delete this item?");
+var name  = await jsRuntime.PromptAsync("Your name?", "Flo");
+
+// DOM helpers
+var exists  = await jsRuntime.IsElementAvailableAsync("my-element-id");
+await jsRuntime.RemoveElementAsync("my-element-id");
+var scripts = await jsRuntime.GetLoadedScriptsAsync();
+
+// wait for a global that a third party script defines
+var ready = await jsRuntime.WaitForNamespaceAsync("google.maps", TimeSpan.FromSeconds(10),
+                                                  TimeSpan.FromMilliseconds(100));
+
+// hit testing for a mouse event
+var inside = await jsRuntime.IsEventWithin(mouseArgs, elementReference);</code></pre>
+</div>
+
+
+<h2 id="modules">Modules</h2>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">// plain import
+var module = await jsRuntime.ImportModuleAsync("./js/mymodule.js");
+
+// import and publish it on window, so plain interop calls can reach it
+await jsRuntime.ImportModuleAsAsync("./js/mymodule.js", "MyModule");
+await jsRuntime.InvokeVoidAsync("MyModule.doSomething");
+
+// import and immediately create a JS object from an exported factory
+var (module, instance) = await jsRuntime.ImportModuleAndCreateJsAsync(
+    "./js/mymodule.js", "initialize", elementReference, dotNetReference);</code></pre>
+</div>
+
+
+<h2 id="events">Event interop</h2>
+
+<p>
+    <code>BlazorJSEventInterop&lt;TEventArgs&gt;</code> connects any DOM event to a C# callback. The generic
+    argument is the event args type the callback receives.
+</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">private BlazorJSEventInterop&lt;PointerEventArgs&gt; _jsEvent;
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (!firstRender) return;
+
+    _jsEvent = new BlazorJSEventInterop&lt;PointerEventArgs&gt;(jsRuntime);
+
+    // fires when a click happens OUTSIDE of the given selectors - the dropdown case
+    await _jsEvent.OnBlur(OnClickedOutside, ".my-dropdown");
+
+    // or hook any event, optionally scoped to a selector
+    await _jsEvent.AddEventListener("keydown", OnKeyDown);
+    await _jsEvent.AddEventListener("scroll", OnScroll, ".my-list");
+}
+
+private Task OnClickedOutside(PointerEventArgs args) =&gt; CloseDropdown();
+
+// always dispose, it removes the listeners in the browser again
+public ValueTask DisposeAsync() =&gt; _jsEvent.DisposeAsync();</code></pre>
+</div>
+
+<div class="note">
+    <strong>Selector not there yet?</strong> If the element does not exist at the time of the call, a
+    MutationObserver waits for it and attaches the listener as soon as Blazor rendered it.
+</div>
+
+
+<h2 id="observers">Resize &amp; visibility</h2>
+
+<p>
+    Two observers that are painful to wire up by hand, exposed as the same kind of callback:
+    <code>OnResize</code> wraps a <code>ResizeObserver</code>, <code>OnVisibilityChanged</code> an
+    <code>IntersectionObserver</code>. Both are disconnected when the interop instance is disposed.
+</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">private BlazorJSEventInterop&lt;ElementSizeArgs&gt; _resize;
+private BlazorJSEventInterop&lt;ElementVisibilityArgs&gt; _visibility;
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (!firstRender) return;
+
+    _resize = new BlazorJSEventInterop&lt;ElementSizeArgs&gt;(jsRuntime);
+    await _resize.OnResize(OnResized, ".my-chart");      // no selector = the whole viewport
+
+    _visibility = new BlazorJSEventInterop&lt;ElementVisibilityArgs&gt;(jsRuntime);
+    await _visibility.OnVisibilityChanged(LoadMore, "#load-more-marker", threshold: 0.5);
+}
+
+private Task OnResized(ElementSizeArgs args)
+    =&gt; InvokeAsync(() =&gt; RedrawChart(args.Width, args.Height));
+
+private async Task LoadMore(ElementVisibilityArgs args)
+{
+    if (args.IsVisible)
+        await LoadNextPage();
+}</code></pre>
+</div>
+
+<table>
+    <thead><tr><th>Type</th><th>Members</th></tr></thead>
+    <tbody>
+        <tr><td><code>ElementSizeArgs</code></td><td><code>Width</code>, <code>Height</code>, <code>Top</code>, <code>Left</code></td></tr>
+        <tr><td><code>ElementVisibilityArgs</code></td><td><code>IsVisible</code>, <code>Ratio</code> (0 to 1)</td></tr>
+    </tbody>
+</table>
+
+<p>
+    The typical use cases: redrawing a canvas or chart when its container changes, and infinite scrolling or
+    lazy loading with a marker element at the end of a list.
+</p>
+
+
+<h2 id="base-component">JS base component</h2>
+
+<p>
+    <code>BlazorJsBaseComponent&lt;T&gt;</code> is the boilerplate for wrapping a JavaScript library in a
+    Blazor component: it imports the module, calls its factory function, keeps the JS object reference,
+    forwards parameter changes and disposes both sides again.
+</p>
+
+<div class="code">
+    <div class="code-head">YourComponent.razor<button class="copy">copy</button></div>
+    <pre><code class="language-html">@inherits BlazorJs.BlazorJsBaseComponent&lt;YourComponent&gt;
+
+&lt;div @ref="ElementReference"&gt;&lt;/div&gt;</code></pre>
+</div>
+
+<div class="code">
+    <div class="code-head">YourComponent.razor.cs<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">public partial class YourComponent
+{
+    protected override string ComponentJsFile() =&gt; "./js/YourComponent.js";
+    protected override string ComponentJsInitializeMethodName() =&gt; "initializeYourComponent";
+
+    [Parameter] public string SomeGeneralParam { get; set; }
+
+    [Parameter, ForJs] public int ParamForJs { get; set; } = 100;
+    [Parameter, ForJs("differentNameInJs")] public int AnotherParam { get; set; } = 100;
+
+    // called automatically whenever a [ForJs] parameter changed
+    protected override async Task OnJsOptionsChanged()
+    {
+        if (JsReference != null)
+            await JsReference.InvokeVoidAsync("setOptions", MyJsOptions());
+    }
+
+    private object MyJsOptions() =&gt; this.AsJsObject(new { configValueWithoutParam = 123 });
+
+    // by default only ElementReference and the dotnet reference are passed
+    public override object[] GetJsArguments()
+        =&gt; new object[] { ElementReference, CreateDotNetObjectReference(), MyJsOptions() };
+}</code></pre>
+</div>
+
+<div class="code">
+    <div class="code-head">./js/YourComponent.js<button class="copy">copy</button></div>
+    <pre><code class="language-javascript">class YourComponent {
+    constructor(elementRef, dotNet, options) {
+        this.elementRef = elementRef;
+        this.dotnet = dotNet;
+        this.createWhatever(options);
+    }
+
+    createWhatever(options) {
+        console.log(options.paramForJs);          // [ForJs] lowercases the first char
+        console.log(options.differentNameInJs);   // unless you name it yourself
+        console.log(options.configValueWithoutParam);
+    }
+
+    setOptions(options) { /* apply the new options */ }
+
+    // dispose is called by the base component before the reference is released
+    dispose() { /* clean up */ }
+}
+
+export function initializeYourComponent(elementRef, dotnet, options) {
+    return new YourComponent(elementRef, dotnet, options);
+}</code></pre>
+</div>
+
+<h3>Members</h3>
+
+<table>
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+        <tr><td><code>JsReference</code></td><td>The created JS object.</td></tr>
+        <tr><td><code>ModuleReference</code></td><td>The imported module.</td></tr>
+        <tr><td><code>ElementReference</code></td><td>The rendered element, bind it with <code>@ref</code>.</td></tr>
+        <tr><td><code>WaitReferenceCreatedAsync()</code></td><td>Completes once the JS object exists &mdash; useful from parent components.</td></tr>
+        <tr><td><code>GetJsArguments()</code></td><td>Override to control what the factory function receives.</td></tr>
+        <tr><td><code>OnJsOptionsChanged()</code></td><td>Override to push changed <code>[ForJs]</code> parameters into JS.</td></tr>
+    </tbody>
+</table>
+
+
+<h2 id="forjs">The ForJs attribute</h2>
+
+<p>
+    <code>[ForJs]</code> marks the parameters that belong to the JavaScript side. Marked properties are
+    collected into a plain options object, and a change to any of them triggers
+    <code>OnJsOptionsChanged</code>.
+</p>
+
+<div class="code">
+    <div class="code-head">csharp<button class="copy">copy</button></div>
+    <pre><code class="language-csharp">[Parameter, ForJs] public int Delay { get; set; }                  // -&gt; options.delay
+[Parameter, ForJs("speed")] public int AnimationSpeed { get; set; } // -&gt; options.speed
+
+// changes trigger OnJsOptionsChanged but the value is not part of the options object
+[Parameter, ForJs(IgnoreOnParams = true)] public bool Refresh { get; set; }
+
+// build the object, optionally merged with values that are not parameters
+var options = this.AsJsObject(new { theme = "dark" });</code></pre>
+</div>
+
+<p>
+    Enums are serialized with their <code>[Description]</code> value when they have one, which usually
+    matches the string a JS library expects.
+</p>
+
+
+<h2 id="browser-detect">Browser detect</h2>
+
+<p>
+    <code>&lt;BrowserDetect&gt;</code> collects what the browser knows about itself into a
+    <code>BrowserInfo</code>. Architecture and the exact OS version arrive slightly later through the
+    User-Agent Client Hints API, which is why they have their own callbacks.
+</p>
+
+<div class="code">
+    <div class="code-head">razor<button class="copy">copy</button></div>
+    <pre><code class="language-html">&lt;BrowserDetect @bind-browserInfo="@Info"
+               OSVersionUpdate="v =&gt; osVersion = v"
+               OSArchitectureUpdate="a =&gt; architecture = a" /&gt;
+
+@code {
+    public BrowserInfo Info { get; set; }
+}</code></pre>
+</div>
+
+<p>
+    <code>BrowserInfo</code> carries browser name and version, engine, operating system, screen resolution,
+    time zone, user agent and the <code>IsMobile</code> / <code>IsAndroid</code> / <code>IsIPhone</code> /
+    <code>IsIPad</code> flags.
+</p>
+
+
+<h2 id="api">API overview</h2>
+
+<table>
+    <thead><tr><th>Member</th><th>What it does</th></tr></thead>
+    <tbody>
+        <tr><td><code>&lt;Scripts&gt;</code> / <code>&lt;Styles&gt;</code></td><td>Load and unload files per page or component.</td></tr>
+        <tr><td><code>LoadFilesAsync</code> / <code>UnloadFilesAsync</code></td><td>The same from code.</td></tr>
+        <tr><td><code>AddCss</code> / <code>LoadCss</code></td><td>Inject css from a string or an embedded resource.</td></tr>
+        <tr><td><code>DInvokeVoidAsync</code> / <code>DInvokeAsync&lt;T&gt;</code></td><td>Run a C# lambda as JavaScript.</td></tr>
+        <tr><td><code>CopyToClipboardAsync</code> / <code>ReadClipboardAsync</code></td><td>Clipboard access with a fallback.</td></tr>
+        <tr><td><code>AlertAsync</code> / <code>ConfirmAsync</code> / <code>PromptAsync</code></td><td>The three browser dialogs.</td></tr>
+        <tr><td><code>WaitForNamespaceAsync</code> / <code>IsNamespaceAvailableAsync</code></td><td>Wait for a global to appear.</td></tr>
+        <tr><td><code>IsElementAvailableAsync</code> / <code>RemoveElementAsync</code></td><td>Small DOM helpers.</td></tr>
+        <tr><td><code>GetLoadedScriptsAsync</code></td><td>All script sources currently in the document.</td></tr>
+        <tr><td><code>IsEventWithin</code></td><td>Whether a mouse event happened inside an element.</td></tr>
+        <tr><td><code>ImportModuleAsync</code> / <code>ImportModuleAsAsync</code> / <code>ImportModuleAndCreateJsAsync</code></td><td>ES module helpers.</td></tr>
+        <tr><td><code>BlazorJSEventInterop&lt;T&gt;</code></td><td><code>AddEventListener</code>, <code>OnBlur</code>, <code>OnResize</code>, <code>OnVisibilityChanged</code>.</td></tr>
+        <tr><td><code>BlazorJsBaseComponent&lt;T&gt;</code></td><td>Base class for JS wrapper components.</td></tr>
+        <tr><td><code>[ForJs]</code> / <code>AsJsObject</code></td><td>Map component parameters onto a JS options object.</td></tr>
+        <tr><td><code>&lt;BrowserDetect&gt;</code> / <code>BrowserInfo</code></td><td>Browser, engine, OS and screen information.</td></tr>
+    </tbody>
+</table>
+
+
+<h2 id="frameworks">Target frameworks</h2>
+
+<p>
+    The package multi-targets <code>netstandard2.1</code> and <code>net6.0</code> through
+    <code>net10.0</code>. Every modern target references the matching
+    <code>Microsoft.AspNetCore.Components.Web</code> version, derived from the target framework itself, so a
+    new .NET version is a one-line change.
+</p>
+
+<div class="note">
+    <strong>netstandard2.1</strong> exists for old Blazor 3.1 projects. The dynamic invocation API
+    (<code>DInvoke*</code>), <code>BlazorJsBaseComponent&lt;T&gt;</code> and the module helpers need
+    <code>net6.0</code> or newer.
+</div>
+
+<footer>
+    <p>
+        BlazorJS is MIT licensed. Built by <a href="https://github.com/fgilde" target="_blank" rel="noopener">fgilde</a> &mdash;
+        <a href="https://github.com/fgilde/BlazorJS" target="_blank" rel="noopener">source on GitHub</a>,
+        <a href="https://www.nuget.org/packages/BlazorJS" target="_blank" rel="noopener">package on NuGet</a>.
+    </p>
+</footer>
+
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/csharp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+(function () {
+    if (window.hljs) hljs.highlightAll();
+
+    // copy buttons
+    document.querySelectorAll('.copy').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var code = button.closest('.code').querySelector('code').innerText;
+            navigator.clipboard.writeText(code).then(function () {
+                button.textContent = 'copied';
+                setTimeout(function () { button.textContent = 'copy'; }, 1500);
+            });
+        });
+    });
+
+    // highlight the section that is currently on screen
+    var links = Array.prototype.slice.call(document.querySelectorAll('#toc a[href^="#"]'));
+    var targets = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+
+    function updateActive() {
+        var index = 0;
+        for (var i = 0; i < targets.length; i++) {
+            if (targets[i] && targets[i].getBoundingClientRect().top <= 120) index = i;
+        }
+        links.forEach(function (a, i) { a.classList.toggle('active', i === index); });
+    }
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+
+    // mobile menu
+    var sidebar = document.getElementById('sidebar');
+    document.getElementById('menuToggle').addEventListener('click', function () {
+        sidebar.classList.toggle('open');
+    });
+    sidebar.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A') sidebar.classList.remove('open');
+    });
+})();
+</script>
+
+</body>
+</html>

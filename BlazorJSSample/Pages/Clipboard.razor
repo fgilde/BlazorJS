@@ -1,0 +1,53 @@
+@page "/clipboard"
+@inject IJSRuntime jsRuntime
+
+<h1>Clipboard</h1>
+<p class="lead">
+    <code>CopyToClipboardAsync</code> uses <code>navigator.clipboard</code> when the page runs in a secure
+    context and falls back to the legacy <code>execCommand</code> path otherwise, so it also works on plain
+    http during development. It returns <code>false</code> when the browser refused the copy.
+</p>
+
+<div class="card">
+    <h3>Try it</h3>
+    <div class="row">
+        <input type="text" @bind="text" @bind:event="oninput" />
+        <button class="btn" @onclick="Copy">Copy</button>
+        <button class="btn secondary" @onclick="Paste">Read clipboard</button>
+    </div>
+    @if (status != null)
+    {
+        <div class="result">@status</div>
+    }
+</div>
+
+<h2>Usage</h2>
+<pre><code>@code_sample</code></pre>
+
+<p class="lead">
+    Reading always needs a secure context and a user permission. When the browser denies it,
+    <code>ReadClipboardAsync</code> returns <code>null</code> instead of throwing.
+</p>
+
+@code {
+    private string text = "Copied with BlazorJS";
+    private string status;
+
+    private const string code_sample = @"var copied = await jsRuntime.CopyToClipboardAsync(""Copied with BlazorJS"");
+if (!copied)
+    await jsRuntime.AlertAsync(""The browser refused the copy."");
+
+var fromClipboard = await jsRuntime.ReadClipboardAsync(); // null when denied";
+
+    private async Task Copy()
+    {
+        var copied = await jsRuntime.CopyToClipboardAsync(text);
+        status = copied ? "Copied. Paste it somewhere to check." : "The browser refused the copy.";
+    }
+
+    private async Task Paste()
+    {
+        var value = await jsRuntime.ReadClipboardAsync();
+        status = value == null ? "Reading was denied by the browser." : $"Clipboard contains: {value}";
+    }
+}

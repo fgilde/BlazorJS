@@ -1,0 +1,66 @@
+@page "/js-component"
+
+<h1>JS component base</h1>
+<p class="lead">
+    <code>BlazorJsBaseComponent&lt;T&gt;</code> imports a JS module, creates the JS object from it, keeps
+    parameters marked with <code>[ForJs]</code> in sync and disposes both sides again. The box below is a
+    small component built exactly that way.
+</p>
+
+<div class="card">
+    <SparkBox Label="@label" PulseInterval="@pulse" OnClicked="OnBoxClicked" />
+    <div class="row" style="margin-top:1rem">
+        <input type="text" @bind="label" @bind:event="oninput" />
+        <button class="btn secondary" @onclick="() => pulse = pulse == 700 ? 200 : 700">
+            Toggle speed (@pulse ms)
+        </button>
+    </div>
+    <div class="result">Box was clicked <b>@clicks</b> times (callback comes from JS).</div>
+</div>
+
+<h2>The component</h2>
+<pre><code>@code_component</code></pre>
+
+<h2>The module</h2>
+<pre><code>@code_module</code></pre>
+
+@code {
+    private string label = "Click me";
+    private int pulse = 700;
+    private int clicks;
+
+    private void OnBoxClicked() => clicks++;
+
+    private const string code_component = @"public partial class SparkBox
+{
+    protected override string ComponentJsFile() => ""./js/SparkBox.js"";
+    protected override string ComponentJsInitializeMethodName() => ""initializeSparkBox"";
+
+    [Parameter, ForJs] public string Label { get; set; } = ""SparkBox"";
+    [Parameter, ForJs(""pulseMs"")] public int PulseInterval { get; set; } = 700;
+
+    [JSInvokable] public Task OnSparkClicked() => OnClicked.InvokeAsync();
+
+    // called automatically whenever a [ForJs] parameter changed
+    protected override async Task OnJsOptionsChanged()
+    {
+        if (JsReference != null)
+            await JsReference.InvokeVoidAsync(""setOptions"", JsOptions());
+    }
+
+    private object JsOptions() => this.AsJsObject(new { glowColor = ""#22d3ee"" });
+
+    public override object[] GetJsArguments()
+        => new object[] { ElementReference, CreateDotNetObjectReference(), JsOptions() };
+}";
+
+    private const string code_module = @"class SparkBox {
+    constructor(element, dotnet, options) { this.element = element; this.dotnet = dotnet; this.setOptions(options); }
+    setOptions(options) { this.element.textContent = options.label; /* ... */ }
+    dispose() { clearInterval(this.timer); }
+}
+
+export function initializeSparkBox(element, dotnet, options) {
+    return new SparkBox(element, dotnet, options);
+}";
+}

@@ -1,0 +1,50 @@
+@page "/css"
+@inject IJSRuntime jsRuntime
+
+<h1>CSS at runtime</h1>
+<p class="lead">
+    <code>AddCss</code> injects a stylesheet from a string, <code>LoadCss</code> reads it from an
+    <code>EmbeddedResource</code> of the calling assembly. Useful for component libraries that ship their own styles.
+</p>
+
+<div class="card @(embeddedLoaded ? "embedded-demo" : "")">
+    <h3>Embedded stylesheet</h3>
+    <p>
+        This box gets a cyan border as soon as <code>css/embedded-demo.css</code> is loaded from the
+        assembly resources.
+    </p>
+    <div class="row">
+        <button class="btn" @onclick="LoadEmbedded" disabled="@embeddedLoaded">Load embedded css</button>
+        <button class="btn secondary" @onclick="AddInline">Add inline css</button>
+    </div>
+    @if (inlineAdded)
+    {
+        <div class="result runtime-css-demo">This text was styled by the inline css.</div>
+    }
+</div>
+
+<h2>Usage</h2>
+<pre><code>@code_sample</code></pre>
+
+@code {
+    private bool embeddedLoaded;
+    private bool inlineAdded;
+
+    private const string code_sample = @"// from a string, the id makes it replaceable and repeatable
+await jsRuntime.AddCss("".demo{color:#22d3ee}"", ""blazorjs-demo"", skipIfElementExists: true);
+
+// from an <EmbeddedResource> of the calling assembly
+await jsRuntime.LoadCss(""css/embedded-demo.css"");";
+
+    private async Task LoadEmbedded()
+    {
+        await jsRuntime.LoadCss("css/embedded-demo.css");
+        embeddedLoaded = true;
+    }
+
+    private async Task AddInline()
+    {
+        await jsRuntime.AddCss(".runtime-css-demo{color:#f0abfc;font-weight:700}", "blazorjs-inline-demo", true);
+        inlineAdded = true;
+    }
+}

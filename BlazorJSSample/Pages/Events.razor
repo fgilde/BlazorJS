@@ -1,0 +1,81 @@
+@page "/events"
+@implements IAsyncDisposable
+@inject IJSRuntime jsRuntime
+
+<h1>Event interop</h1>
+<p class="lead">
+    <code>BlazorJSEventInterop&lt;T&gt;</code> attaches any DOM event to a C# callback, with or without a
+    selector. <code>OnBlur</code> is the click-outside case that every dropdown needs.
+</p>
+
+<div class="card">
+    <h3>Click outside</h3>
+    <p>Click inside the box, then anywhere else on the page.</p>
+    <div class="visibility-target click-target">
+        <b>@(isInside ? "Focus is here" : "Click me")</b>
+    </div>
+    <div class="result">Left the box <b>@outsideCount</b> times.</div>
+</div>
+
+<div class="card">
+    <h3>Any event</h3>
+    <p>A <code>keydown</code> listener on the document. Press any key.</p>
+    <div class="result">Last key: <b>@(lastKey ?? "-")</b></div>
+</div>
+
+<h2>Usage</h2>
+<pre><code>@code_sample</code></pre>
+
+@code {
+    private BlazorJSEventInterop<PointerEventArgs> pointerEvents;
+    private BlazorJSEventInterop<KeyboardEventArgs> keyEvents;
+    private int outsideCount;
+    private bool isInside;
+    private string lastKey;
+
+    private const string code_sample = @"private BlazorJSEventInterop<PointerEventArgs> _jsEvent;
+
+_jsEvent = new BlazorJSEventInterop<PointerEventArgs>(jsRuntime);
+
+// fires when a click happens outside of the given selectors
+await _jsEvent.OnBlur(OnClickedOutside, "".click-target"");
+
+// or hook any event, optionally scoped to a selector
+await _jsEvent.AddEventListener(""keydown"", OnKeyDown);
+
+// always dispose, it removes the listeners in the browser again
+await _jsEvent.DisposeAsync();";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        pointerEvents = new BlazorJSEventInterop<PointerEventArgs>(jsRuntime);
+        await pointerEvents.OnBlur(OnClickedOutside, ".click-target");
+
+        keyEvents = new BlazorJSEventInterop<KeyboardEventArgs>(jsRuntime);
+        await keyEvents.AddEventListener("keydown", OnKeyDown);
+    }
+
+    private Task OnClickedOutside(PointerEventArgs args)
+    {
+        outsideCount++;
+        isInside = false;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnKeyDown(KeyboardEventArgs args)
+    {
+        lastKey = args.Key;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (pointerEvents != null)
+            await pointerEvents.DisposeAsync();
+        if (keyEvents != null)
+            await keyEvents.DisposeAsync();
+    }
+}

@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.JSInterop;
 
 namespace BlazorJS
@@ -52,11 +51,14 @@ namespace BlazorJS
             await js.InvokeVoidAsync("eval", script);
         }
 
-        private static async Task<string> GetEmbeddedFileContentAsync(string file)
-        {            
-            var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
-            var fileInfo = embeddedProvider.GetFileInfo(file);
-            await using var stream = fileInfo.CreateReadStream();
+        private static async Task<string> GetEmbeddedFileContentAsync(Assembly assembly, string file)
+        {
+            // EmbeddedResource names are '{RootNamespace}.{path with / replaced by .}', so a suffix match is enough.
+            var suffix = "." + file.Replace('/', '.').TrimStart('.');
+            var name = Array.Find(assembly.GetManifestResourceNames(), n => n.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+            if (name == null)
+                throw new FileNotFoundException($"No embedded resource matching '{file}' found in {assembly.GetName().Name}. Add it as <EmbeddedResource> to your project.", file);
+            using var stream = assembly.GetManifestResourceStream(name);
             using var reader = new StreamReader(stream, Encoding.UTF8);
             return await reader.ReadToEndAsync();
         }
@@ -76,9 +78,30 @@ namespace BlazorJS
             return await runtime.InvokeAsync<string>("prompt", message, value);
         }
 
-        public static async Task<IJSRuntime> LoadCss(this IJSRuntime runtime, string cssFile)
+        /// <summary>
+        /// Copies text to the clipboard. Falls back to the legacy execCommand path when navigator.clipboard is
+        /// unavailable (insecure context, older browser). Returns false if the copy was rejected.
+        /// </summary>
+        public static async Task<bool> CopyToClipboardAsync(this IJSRuntime runtime, string text)
         {
-            var css = await GetEmbeddedFileContentAsync(cssFile);
+            return await runtime.InvokeAsync<bool>("BlazorJS.clipboard.write", text);
+        }
+
+        /// <summary>
+        /// Reads text from the clipboard. Returns null when the browser denies access
+        /// (reading always requires a secure context and a user permission).
+        /// </summary>
+        public static async Task<string> ReadClipboardAsync(this IJSRuntime runtime)
+        {
+            return await runtime.InvokeAsync<string>("BlazorJS.clipboard.read");
+        }
+
+        /// <summary>
+        /// Loads a css file that is embedded as EmbeddedResource in the given assembly (default: the calling assembly) and adds it to the document.
+        /// </summary>
+        public static async Task<IJSRuntime> LoadCss(this IJSRuntime runtime, string cssFile, Assembly assembly = null)
+        {
+            var css = await GetEmbeddedFileContentAsync(assembly ?? Assembly.GetCallingAssembly(), cssFile);
             return await runtime.AddCss(css);
         }
 
