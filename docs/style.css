@@ -200,6 +200,8 @@ td code { white-space: nowrap; }
 
 /* ---------- connect widgets ---------- */
 
+.hero-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.25rem; }
+
 .connect-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
