@@ -200,7 +200,7 @@ td code { white-space: nowrap; }
 
 /* ---------- connect widgets ---------- */
 
-.hero-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.25rem; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: .25rem 0 2.25rem; }
 
 .connect-grid {
     display: grid;
