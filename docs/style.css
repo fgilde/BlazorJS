@@ -198,6 +198,17 @@ td code { white-space: nowrap; }
 }
 .copy:hover { color: #fff; border-color: var(--border-strong); }
 
+/* ---------- connect widgets ---------- */
+
+.connect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 1rem;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+.connect-grid > * { display: block; min-width: 0; }
+
 footer {
     margin-top: 5rem;
     padding-top: 1.5rem;

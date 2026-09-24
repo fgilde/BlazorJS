@@ -398,4 +398,5 @@ user agent and the `IsMobile` / `IsAndroid` / `IsIPhone` / `IsIPad` flags.
 ---
 
 The full documentation lives at **[fgilde.github.io/BlazorJS](https://fgilde.github.io/BlazorJS/)**.
+Questions, a bug or a coffee for the maintainer: [contact and support](https://fgilde.github.io/BlazorJS/#contact).
 BlazorJS is MIT licensed.

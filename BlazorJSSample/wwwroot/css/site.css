@@ -215,6 +215,15 @@ th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: up
     text-align: center;
 }
 
+/* connect widgets */
+.connect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+.connect-grid > * { display: block; min-width: 0; }
+
 @media (max-width: 800px) {
     .layout { flex-direction: column; }
     .sidebar { width: 100%; flex: none; height: auto; position: static; }
