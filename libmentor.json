@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "BlazorJS",
+  "repository": "https://github.com/fgilde/BlazorJS",
+  "revision": "master",
+  "output": ".libmentor",
+  "exclude": [
+    "**/*.de.md",
+    "docs/de/**",
+    "**/node_modules/**"
+  ],
+  "examples": [],
+  "guidance": [
+    "This is a source snapshot. Check the installed package version and API evidence before suggesting code."
+  ],
+  "description": "JavaScript loading, unloading and dynamic invocation for Blazor.",
+  "version": "2.3.0-source",
+  "documents": [
+    "README.md",
+    "docs/index.html"
+  ],
+  "sources": [
+    "BlazorJS/**/*.cs"
+  ],
+  "packages": [
+    "BlazorJS"
+  ],
+  "baseUrl": "https://fgilde.github.io/BlazorJS/ai"
+}
